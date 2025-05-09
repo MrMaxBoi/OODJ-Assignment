@@ -102,7 +102,7 @@ private void setupImageScaling() {
         );
 
         jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 28)); // NOI18N
-        jLabel2.setText("Login");
+        jLabel2.setText("Login123");
 
         workIDTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
