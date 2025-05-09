@@ -132,7 +132,7 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Helvetica Neue" size="28" style="1"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Login123"/>
+        <Property name="text" type="java.lang.String" value="Login"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="workIDTextField">
