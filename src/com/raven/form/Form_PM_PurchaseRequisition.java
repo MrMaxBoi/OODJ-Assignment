@@ -24,13 +24,11 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
+public class Form_PM_PurchaseRequisition extends javax.swing.JPanel {
     private List<PurchaseRequisition> prs = new ArrayList<>();
     private boolean hasUnsavedChanges = false;
-    private String currentUserId;
     
-    public Form_SM_PurchaseRequisition(String userId) {
-        this.currentUserId = userId;
+    public Form_PM_PurchaseRequisition() {
         initComponents();
         loadPRs();
         initTable();
@@ -49,7 +47,7 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
         // Set up table model to show PR summary
         DefaultTableModel model = new DefaultTableModel(
             new Object[][]{}, 
-            new String[]{"PR ID", "Date Required", "Items Count", "Raised By","Status", "Action"}
+            new String[]{"PR ID", "Date Required", "Items Count", "Raised By", "Status", "Action"}
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -64,20 +62,16 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
             @Override
             public void onAction(int row, String actionCommand) {
                 switch (actionCommand) {
-                    case "Edit":
+                    case "View":
                         showEditDialog(row);
-                        break;
-                    case "Delete":
-                        deletePR(row);
                         break;
                 }
             }
         };
 
-        String[] buttonNames = {"Edit", "Delete"};
+        String[] buttonNames = {"View"};
         String[] icons = {
-            "/com/raven/icon/edit.png",
-            "/com/raven/icon/delete.png"
+            "/com/raven/icon/view.png",
         };
 
         table.getColumnModel().getColumn(5).setCellRenderer(
@@ -85,9 +79,6 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
         table.getColumnModel().getColumn(5).setCellEditor(
             new TableActionCellEditor(event, buttonNames, icons));
         
-        // Connect buttons
-        addButton.addActionListener(e -> showAddDialog());
-        saveButton.addActionListener(e -> savePRs());
         
     }
     
@@ -108,57 +99,7 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
             });
         }
     }
-    
-
-    
-    private void showAddDialog() {
-        try {
-            JDialog dialog = new JDialog();
-            dialog.setTitle("New Purchase Requisition");
-            dialog.setModal(true);
-            dialog.setLayout(new BorderLayout());
-            
-            // Create empty PR
-            Map<String, Integer> items = new HashMap<>();
-            PurchaseRequisition newPR = new PurchaseRequisition(
-                PurchaseRequisitionRepository.generateNextPRId(),
-                new Date(),
-                items,
-                currentUserId
-            );
-            
-            // Create editor panel
-            SM_PREditorPanel editorPanel = new SM_PREditorPanel(newPR);
-            dialog.add(editorPanel, BorderLayout.CENTER);
-            
-            // Save button
-            JPanel buttonPanel = new JPanel();
-            JButton saveButton = new JButton("Save");
-            JButton cancelButton = new JButton("Cancel");
-            
-            saveButton.addActionListener(e -> {
-                editorPanel.updatePR();
-                prs.add(newPR);
-                hasUnsavedChanges = true;
-                refreshTable();
-                dialog.dispose();
-            });
-            
-            cancelButton.addActionListener(e -> dialog.dispose());
-            
-            buttonPanel.add(saveButton);
-            buttonPanel.add(cancelButton);
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-            
-            dialog.pack();
-            dialog.setLocationRelativeTo(this);
-            dialog.setVisible(true);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error creating PR: " + ex.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
+        
     private void showEditDialog(int row) {
         PurchaseRequisition pr = prs.get(row);
         
@@ -168,24 +109,15 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
         dialog.setLayout(new BorderLayout());
         
         // Create editor panel
-        SM_PREditorPanel editorPanel = new SM_PREditorPanel(pr);
+        PM_PREditorPanel editorPanel = new PM_PREditorPanel(pr);
         dialog.add(editorPanel, BorderLayout.CENTER);
         
         // Save button
         JPanel buttonPanel = new JPanel();
-        JButton saveButton = new JButton("Save");
         JButton cancelButton = new JButton("Cancel");
         
-        saveButton.addActionListener(e -> {
-            editorPanel.updatePR();
-            hasUnsavedChanges = true;
-            refreshTable();
-            dialog.dispose();
-        });
         
         cancelButton.addActionListener(e -> dialog.dispose());
-        
-        buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
         
@@ -194,29 +126,6 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
         dialog.setVisible(true);
     }
     
-    private void deletePR(int row) {
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Are you sure you want to delete this PR?", 
-            "Confirm Delete", JOptionPane.YES_NO_OPTION);
-        
-        if (confirm == JOptionPane.YES_OPTION) {
-            prs.remove(row);
-            hasUnsavedChanges = true;
-            refreshTable();
-        }
-    }
-    
-    private void savePRs() {
-        try {
-            PurchaseRequisitionRepository.savePRs(prs);
-            hasUnsavedChanges = false;
-            JOptionPane.showMessageDialog(this, "PRs saved successfully!", 
-                "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error saving PRs: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -230,8 +139,6 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
-        saveButton = new javax.swing.JButton();
-        addButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -253,10 +160,6 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
         jLabel1.setForeground(new java.awt.Color(102, 102, 102));
         jLabel1.setText("Purchase Requisition");
 
-        saveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/Save.png"))); // NOI18N
-
-        addButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/AddItem.png"))); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -267,11 +170,7 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(saveButton)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -280,21 +179,15 @@ public class Form_SM_PurchaseRequisition extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 451, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addButton)
-                    .addComponent(saveButton))
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(62, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton saveButton;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 }

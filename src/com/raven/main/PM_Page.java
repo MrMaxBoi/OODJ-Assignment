@@ -8,7 +8,11 @@ package com.raven.main;
 import com.raven.component.Header;
 import com.raven.form.Form_SM_ItemEntry;
 import com.raven.event.EventMenuSelected;
+import com.raven.form.Form_PM_Item;
+import com.raven.form.Form_PM_PurchaseOrderList;
 import com.raven.form.Form_SM_PurchaseOrderList;
+import com.raven.form.Form_PM_PurchaseRequisition;
+import com.raven.form.Form_PM_Supplier;
 import com.raven.form.Form_SM_SupplierManagement;
 import com.raven.form.Form_SM_DailySalesEntry;
 import com.raven.form.Form_SM_Dashboard;
@@ -23,91 +27,70 @@ import javax.swing.JOptionPane;
  *
  * @author RAVEN
  */
-public class SM_Page extends javax.swing.JFrame {
+public class PM_Page extends javax.swing.JFrame {
 
     /**
      * Creates new form Main
      */
     
-    private Form_SM_Dashboard home;
-    private Form_SM_ItemEntry form1;
-    private Form_SM_SupplierManagement form2;
-    private Form_SM_DailySalesEntry form3;
-    private Form_SM_PurchaseRequisition form4;
-    private Form_SM_PurchaseOrderList form5;
+    private Form_PM_Item home;
+    private Form_PM_Supplier form1;
+    private Form_PM_PurchaseRequisition form2;
+    private Form_PM_PurchaseOrderList form3;
     private String currentUserId;
     
-    public SM_Page(String userId) {
-        this.currentUserId = userId;
-        initComponents();
-        setBackground(new Color(0, 0, 0, 0));
-        home = new Form_SM_Dashboard();
-        form1 = new Form_SM_ItemEntry();
-        form2 = new Form_SM_SupplierManagement();
-        form3 = new Form_SM_DailySalesEntry();
-        form4 = new Form_SM_PurchaseRequisition(currentUserId);
-        form5 = new Form_SM_PurchaseOrderList();
-        menu.initMoving(SM_Page.this);
-        menu.addEventMenuSelected(new EventMenuSelected() {
-            @Override
-            public void selected(int index) {
-                if (index == 0) {
-                    setForm(home);
-                } else if (index == 1) {
-                    setForm(form1);
-                } else if (index == 2) {
-                    setForm(form2);
-                } else if (index == 3) {
-                    setForm(form3);
-                } else if (index == 4) {
-                    setForm(form4);
-                } else if (index == 5) {
-                    setForm(form5);
-                } else if (index == 15) {
-                    logout();
+    public PM_Page(String userId) {
+        try {
+            this.currentUserId = userId;
+            initComponents();
+            setBackground(new Color(0, 0, 0, 0));
+            
+            // Initialize forms with user ID where needed
+            home = new Form_PM_Item();
+            form1 = new Form_PM_Supplier();
+            form2 = new Form_PM_PurchaseRequisition();
+            form3 = new Form_PM_PurchaseOrderList(userId);
+
+            menu.initMoving(PM_Page.this);
+            menu.addEventMenuSelected(new EventMenuSelected() {
+                @Override
+                public void selected(int index) {
+                    try {
+                        if (index == 0) {
+                            setForm(home);
+                        } else if (index == 1) {
+                            setForm(form1);
+                        } else if (index == 2) {
+                            setForm(form2);
+                        } else if (index == 3) {
+                            setForm(form3);
+                        } else if (index == 15) {
+                            logout();
+                        }
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(PM_Page.this, 
+                            "Error loading form: " + e.getMessage(), 
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        
-        setForm(new Form_SM_Dashboard());
+            });
+            
+            setForm(new Form_PM_Item());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Error initializing Purchase Manager dashboard: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
     
-    public SM_Page() {
+    public PM_Page() {
         this("default_user"); // Provide a default value or handle differently
     }
     
 private void logout() {
-    // Check for unsaved changes in both forms
-    boolean hasUnsavedItemChanges = form1 != null && form1.hasUnsavedChanges;
-    boolean hasUnsavedSupplierChanges = form2 != null && form2.hasUnsavedChanges;
-    
-    if (hasUnsavedItemChanges || hasUnsavedSupplierChanges) {
-        StringBuilder message = new StringBuilder("You have unsaved changes in:");
-        if (hasUnsavedItemChanges) message.append("\n- Item Management");
-        if (hasUnsavedSupplierChanges) message.append("\n- Supplier Management");
-        message.append("\n\nDo you want to save before logging out?");
-        
-        int saveOption = JOptionPane.showConfirmDialog(
-            this,
-            message.toString(),
-            "Unsaved Changes",
-            JOptionPane.YES_NO_CANCEL_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-
-        if (saveOption == JOptionPane.YES_OPTION) {
-            // Save both forms silently during logout
-            boolean itemSaved = form1 != null && form1.hasUnsavedChanges ? form1.saveItemsToFile(true) : true;
-            boolean supplierSaved = form2 != null && form2.hasUnsavedChanges ? form2.saveSuppliersToFile(true) : true;
-            
-            if (!itemSaved || !supplierSaved) {
-                return; // Don't proceed with logout if any save failed
-            }
-        } else if (saveOption == JOptionPane.CANCEL_OPTION) {
-            return; // Cancel logout
-        }
-        // If NO, continue with logout without saving
-    }
-
     // Only show logout confirmation if we didn't just handle unsaved changes
     int confirm = JOptionPane.showConfirmDialog(
         this,
@@ -125,23 +108,7 @@ private void logout() {
 }
 
 private void setForm(JComponent com) {
-    // Check for unsaved changes in the current form before switching
-    if (mainPanel.getComponentCount() > 0) {
-        Component current = mainPanel.getComponent(0);
-        
-        if (current instanceof Form_SM_ItemEntry) {
-            Form_SM_ItemEntry currentForm = (Form_SM_ItemEntry)current;
-            if (!currentForm.checkUnsavedChanges()) {
-                return; // Abort the form switch if user cancels
-            }
-        } else if (current instanceof Form_SM_SupplierManagement) {
-            Form_SM_SupplierManagement currentForm = (Form_SM_SupplierManagement)current;
-            if (!currentForm.checkUnsavedChanges()) {
-                return; // Abort the form switch if user cancels
-            }
-        }
-    }
-    
+
     mainPanel.removeAll();
     mainPanel.add(com);
     mainPanel.repaint();
@@ -164,9 +131,9 @@ private void setForm(JComponent com) {
     private void initComponents() {
 
         panelBorder1 = new com.raven.swing.PanelBorder();
-        menu = new com.raven.component.SM_Menu();
         header2 = new com.raven.component.Header();
         mainPanel = new javax.swing.JPanel();
+        menu = new com.raven.component.PM_Menu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
@@ -181,22 +148,21 @@ private void setForm(JComponent com) {
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(header2, javax.swing.GroupLayout.DEFAULT_SIZE, 965, Short.MAX_VALUE)
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 959, Short.MAX_VALUE)
+                    .addComponent(header2, javax.swing.GroupLayout.DEFAULT_SIZE, 959, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addComponent(header2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -231,14 +197,78 @@ private void setForm(JComponent com) {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
@@ -308,7 +338,7 @@ private void setForm(JComponent com) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 // This is just for testing - in real usage, it will be called from Login
-                new SM_Page("test_user").setVisible(true);
+                new PM_Page("test_user").setVisible(true);
             }
         });
     }
@@ -316,7 +346,7 @@ private void setForm(JComponent com) {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.raven.component.Header header2;
     private javax.swing.JPanel mainPanel;
-    private com.raven.component.SM_Menu menu;
+    private com.raven.component.PM_Menu menu;
     private com.raven.swing.PanelBorder panelBorder1;
     // End of variables declaration//GEN-END:variables
 

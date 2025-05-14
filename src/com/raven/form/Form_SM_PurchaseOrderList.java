@@ -1,59 +1,132 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.raven.form;
 
 import com.raven.cell.TableActionCellEditor;
 import com.raven.cell.TableActionCellRender;
 import com.raven.cell.TableActionEvent;
+import com.raven.data.POItem;
+import com.raven.data.PurchaseOrder;
 import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-/**
- *
- * @author RAVEN
- */
 public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
+    private List<PurchaseOrder> pos = new ArrayList<>();
+    
     public Form_SM_PurchaseOrderList() {
         initComponents();
+        loadPOs();
+        initTable();
+    }
+    
+    private void loadPOs() {
+        try {
+            pos = loadPurchaseOrdersFromFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Error loading POs: " + e.getMessage(), 
+                "Error", 
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private List<PurchaseOrder> loadPurchaseOrdersFromFile() throws IOException {
+        List<PurchaseOrder> orders = new ArrayList<>();
+        File file = new File("purchase_orders.txt");
         
-        TableActionEvent event = new TableActionEvent() {
-            @Override
-            public void onAction(int row, String actionCommand) {
-                switch (actionCommand) {
-                    case "Edit":
-                        System.out.println("Edit row: " + row);
-                        break;
-                    case "Delete":
-                        if (table.isEditing()) {
-                            table.getCellEditor().stopCellEditing();
+        if (!file.exists()) {
+            return orders;
+        }
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 5) {
+                    String poId = parts[0];
+                    Date dateRequired = new Date(Long.parseLong(parts[1]));
+                    String raisedBy = parts[2];
+                    String status = parts[3];
+                    
+                    // Parse items (format: IC004:6,IC006:6)
+                    List<POItem> items = new ArrayList<>();
+                    if (!parts[4].isEmpty()) {
+                        for (String itemPair : parts[4].split(",")) {
+                            String[] itemParts = itemPair.split(":");
+                            if (itemParts.length == 2) {
+                                items.add(new POItem(itemParts[0], Integer.parseInt(itemParts[1])));
+                            }
                         }
-                        DefaultTableModel model = (DefaultTableModel) table.getModel();
-                        model.removeRow(row);
-                        break;
-                    // Add more cases as needed
+                    }
+                    
+                    orders.add(new PurchaseOrder(poId, dateRequired, raisedBy, status, items));
                 }
+            }
+        }
+        return orders;
+    }
+    
+    private void initTable() {
+        // Set up table model
+        DefaultTableModel model = new DefaultTableModel(
+            new Object[][]{}, 
+            new String[]{"PO ID", "Date Required", "Items Count", "Raised By", "Status", "Action"}
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 5; // Only action column is editable
             }
         };
         
-        // Define which buttons to show
-        String[] buttonNames = {"View"};
-        String[] icons = {
-            "/com/raven/icon/view.png"
+        table.setModel(model);
+        refreshTable();
+
+        // Set up action buttons (just View for now)
+        TableActionEvent event = new TableActionEvent() {
+            @Override
+            public void onAction(int row, String actionCommand) {
+                if ("View".equals(actionCommand)) {
+                    // Will implement later
+                }
+            }
         };
-        
-        table.getColumnModel().getColumn(4).setCellRenderer(
+
+        String[] buttonNames = {"View"};
+        String[] icons = {"/com/raven/icon/view.png"};
+
+        table.getColumnModel().getColumn(5).setCellRenderer(
             new TableActionCellRender(buttonNames, icons));
-        table.getColumnModel().getColumn(4).setCellEditor(
+        table.getColumnModel().getColumn(5).setCellEditor(
             new TableActionCellEditor(event, buttonNames, icons));
+    }
+    
+    private void refreshTable() {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
         
-        // ... rest of your initialization
-}
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        
+        for (PurchaseOrder po : pos) {
+            model.addRow(new Object[]{
+                po.getPoId(),
+                dateFormat.format(po.getDateRequired()),
+                po.getItems().size(),
+                po.getRaisedBy(),
+                po.getStatus(),
+                "" // Action column
+            });
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -66,45 +139,35 @@ public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
-        jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        refreshButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "POID", "Date Created", "Supplier", "Item Name", "Action"
+                "PO ID", "Date Required", "Items Count", "Raised By", "Status", "Action"
             }
         ));
         table.setRowHeight(35);
         jScrollPane1.setViewportView(table);
 
-        jLabel3.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(153, 153, 153));
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/search.png"))); // NOI18N
-        jLabel3.setText("Search");
-
         jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 36)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(102, 102, 102));
         jLabel1.setText("Purchase Order List");
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/refresh.png"))); // NOI18N
-
-        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 20)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel2.setText("Date:");
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/refresh.png"))); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -115,17 +178,9 @@ public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jButton2))
+                            .addComponent(refreshButton)
+                            .addComponent(jLabel1))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -133,35 +188,25 @@ public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(20, 20, 20)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(2, 2, 2)))
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 422, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 451, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addComponent(refreshButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        loadPOs();
+        refreshTable();
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 }

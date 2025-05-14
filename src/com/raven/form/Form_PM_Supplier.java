@@ -22,12 +22,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-public class Form_SM_SupplierManagement extends javax.swing.JPanel {
+public class Form_PM_Supplier extends javax.swing.JPanel {
     private List<Supplier> suppliers = new ArrayList<>();
     private static final String FILE_NAME = "suppliers.txt";
     public boolean hasUnsavedChanges = false;
     
-    public Form_SM_SupplierManagement() {
+    public Form_PM_Supplier() {
         initComponents();
         loadSuppliersFromFile();
         initTable();
@@ -35,43 +35,15 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
     }    
     
     private void initTable(){
-        addButton.addActionListener(e -> addNewSupplier());
-        saveButton.addActionListener(e -> saveSuppliersToFile());
-        
         // Set up table model
         DefaultTableModel model = new DefaultTableModel(
             new Object[][]{}, 
-            new String[]{"Supplier Code", "Supplier Name", "Contact", "Items Supplied", "Action"}
+            new String[]{"Supplier Code", "Supplier Name", "Contact", "Items Supplied"}
         );
         table.setModel(model);
         refreshTable();
-        
-        // Set up action buttons
-        TableActionEvent event = new TableActionEvent() {
-            @Override
-            public void onAction(int row, String actionCommand) {
-                switch (actionCommand) {
-                    case "Edit":
-                        showEditDialog(row);
-                        break;
-                    case "Delete":
-                        deleteSupplier(row);
-                        break;
-                }
-            }
-        };
-        
-        String[] buttonNames = {"Edit", "Delete"};
-        String[] icons = {
-            "/com/raven/icon/edit.png",
-            "/com/raven/icon/delete.png"
-        };
-        
-        table.getColumnModel().getColumn(4).setCellRenderer(
-            new TableActionCellRender(buttonNames, icons));
-        table.getColumnModel().getColumn(4).setCellEditor(
-            new TableActionCellEditor(event, buttonNames, icons));
-        
+
+
         // Set up search
         searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { searchSuppliers(); }
@@ -198,85 +170,6 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
             return "SUP001";
         }
     }
-    
-    private void showEditDialog(int row) {
-    // Get the supplier code from the table (this works for both filtered and unfiltered views)
-    String supplierCode = (String) table.getModel().getValueAt(row, 0);
-    
-    // Find supplier by code instead of by row index
-    Supplier supplier = null;
-    for (Supplier s : suppliers) {
-        if (s.getCode().equals(supplierCode)) {
-            supplier = s;
-            break;
-        }
-    }
-    
-    if (supplier == null) {
-        JOptionPane.showMessageDialog(this, "Supplier not found!", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    
-    // Create final reference for use in lambda
-    final Supplier finalSupplier = supplier;
-    
-    JDialog editDialog = new JDialog();
-    editDialog.setTitle("Edit Supplier");
-    editDialog.setModal(true);
-    editDialog.setSize(400, 300);
-    editDialog.setLayout(new GridLayout(5, 2, 10, 10));
-    
-    JLabel codeLabel = new JLabel("Supplier Code:");
-    JTextField codeField = new JTextField(supplier.getCode());
-    codeField.setEditable(false);
-    
-    JLabel nameLabel = new JLabel("Supplier Name:");
-    JTextField nameField = new JTextField(supplier.getName());
-    
-    JLabel contactLabel = new JLabel("Contact:");
-    JTextField contactField = new JTextField(supplier.getContact());
-    
-    JLabel itemsLabel = new JLabel("Items Supplied:");
-    JTextField itemsField = new JTextField(formatItemsSupplied(supplier.getItemsSupplied()));
-    itemsField.setEditable(false); // Make this field non-editable
-    itemsField.setToolTipText("Items are managed through the Item Entry form");
-    
-    JButton saveButton = new JButton("Save");
-    JButton cancelButton = new JButton("Cancel");
-    
-    editDialog.add(codeLabel);
-    editDialog.add(codeField);
-    editDialog.add(nameLabel);
-    editDialog.add(nameField);
-    editDialog.add(contactLabel);
-    editDialog.add(contactField);
-    editDialog.add(itemsLabel);
-    editDialog.add(itemsField);
-    editDialog.add(saveButton);
-    editDialog.add(cancelButton);
-    
-    saveButton.addActionListener(e -> {
-        if (nameField.getText().trim().isEmpty() || 
-            contactField.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(editDialog, "Name and Contact are required!", 
-                "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        // Use finalSupplier instead of supplier
-        finalSupplier.setName(nameField.getText().trim());
-        finalSupplier.setContact(contactField.getText().trim());
-        // Note: We don't update itemsSupplied here
-        
-        hasUnsavedChanges = true;
-        refreshTable();
-        editDialog.dispose();
-    });
-    
-    cancelButton.addActionListener(e -> editDialog.dispose());
-    editDialog.setLocationRelativeTo(this);
-    editDialog.setVisible(true);
-}
 
     private String formatItemsSupplied(String itemsSupplied) {
     if (itemsSupplied == null || itemsSupplied.isEmpty()) {
@@ -285,80 +178,6 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
     return itemsSupplied.replace(",", ", ");
 }
     
-    private void addNewSupplier() {
-        loadSuppliersFromFile();
-        JDialog addDialog = new JDialog();
-        addDialog.setTitle("Add New Supplier");
-        addDialog.setModal(true);
-        addDialog.setSize(400, 300);
-        addDialog.setLayout(new GridLayout(5, 2, 10, 10));
-        
-        JLabel codeLabel = new JLabel("Supplier Code:");
-        JTextField codeField = new JTextField(generateNextSupplierCode());
-        codeField.setEditable(false);
-        
-        JLabel nameLabel = new JLabel("Supplier Name:");
-        JTextField nameField = new JTextField();
-        
-        JLabel contactLabel = new JLabel("Contact:");
-        JTextField contactField = new JTextField();
-        
-        JLabel itemsLabel = new JLabel("Items Supplied:");
-        JTextField itemsField = new JTextField();
-        
-        JButton saveButton = new JButton("Save");
-        JButton cancelButton = new JButton("Cancel");
-        
-        addDialog.add(codeLabel);
-        addDialog.add(codeField);
-        addDialog.add(nameLabel);
-        addDialog.add(nameField);
-        addDialog.add(contactLabel);
-        addDialog.add(contactField);
-        addDialog.add(saveButton);
-        addDialog.add(cancelButton);
-        
-        saveButton.addActionListener(e -> {
-            if (nameField.getText().trim().isEmpty() || 
-                contactField.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(addDialog, "Name and Contact are required!", 
-                    "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            Supplier newSupplier = new Supplier(
-                codeField.getText().trim(),
-                nameField.getText().trim(),
-                contactField.getText().trim(),
-                itemsField.getText().trim()
-            );
-            
-            suppliers.add(newSupplier);
-            hasUnsavedChanges = true;
-            refreshTable();
-            addDialog.dispose();
-        });
-        
-        refreshTable();
-        cancelButton.addActionListener(e -> addDialog.dispose());
-        addDialog.setLocationRelativeTo(this);
-        addDialog.setVisible(true);
-    }
-    
-    private void deleteSupplier(int row) {
-        String supplierCode = (String) table.getModel().getValueAt(row, 0);
-
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Are you sure you want to delete this supplier?", 
-            "Confirm Delete", JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            // Find and remove by code instead of by row index
-            suppliers.removeIf(s -> s.getCode().equals(supplierCode));
-            hasUnsavedChanges = true;
-            refreshTable();
-        }
-    }
 
     
     
@@ -371,8 +190,6 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         searchTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        addButton = new javax.swing.JButton();
-        saveButton = new javax.swing.JButton();
         refreshButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
@@ -400,10 +217,6 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
         jLabel1.setForeground(new java.awt.Color(102, 102, 102));
         jLabel1.setText("Supplier Management");
 
-        addButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/AddItem.png"))); // NOI18N
-
-        saveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/Save.png"))); // NOI18N
-
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/refresh.png"))); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -419,15 +232,12 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(addButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
                         .addComponent(refreshButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 128, Short.MAX_VALUE)
-                        .addComponent(saveButton))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -444,10 +254,7 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 446, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(saveButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(refreshButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(refreshButton)
                 .addGap(0, 14, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -458,12 +265,10 @@ public class Form_SM_SupplierManagement extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton refreshButton;
-    private javax.swing.JButton saveButton;
     private javax.swing.JTextField searchTextField;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables

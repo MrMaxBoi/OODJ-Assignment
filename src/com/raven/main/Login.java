@@ -94,7 +94,7 @@ private void setupImageScaling() {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -145,9 +145,9 @@ private void setupImageScaling() {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(72, 72, 72)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(workIDTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(passwordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -164,7 +164,7 @@ private void setupImageScaling() {
             .addGroup(layout.createSequentialGroup()
                 .addGap(93, 93, 93)
                 .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(56, 56, 56)
+                .addGap(50, 50, 50)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(workIDTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -201,12 +201,28 @@ private void setupImageScaling() {
                 SM_Page dashboard = new SM_Page(user.getWorkID());
                 dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
                 dashboard.setVisible(true);
+                this.dispose();
             } 
             else if (role.equalsIgnoreCase("Finance Manager")) {
                 FM_Page dashboard = new FM_Page(user.getWorkID());
                 dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
                 dashboard.setVisible(true);
+                this.dispose();
             }
+            else if (role.equalsIgnoreCase("Purchase Manager")) {
+                PM_Page dashboard = new PM_Page(user.getWorkID());
+                dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
+                dashboard.setVisible(true);
+                this.dispose();
+            }
+            else if (role.equalsIgnoreCase("Inventory Manager")) {
+                IM_Page dashboard = new IM_Page(user.getWorkID());
+                dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
+                dashboard.setVisible(true);
+                this.dispose();
+            }
+            
+            else
             
             this.dispose();
         } else {

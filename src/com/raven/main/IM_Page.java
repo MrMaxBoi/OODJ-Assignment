@@ -23,7 +23,7 @@ import javax.swing.JOptionPane;
  *
  * @author RAVEN
  */
-public class SM_Page extends javax.swing.JFrame {
+public class IM_Page extends javax.swing.JFrame {
 
     /**
      * Creates new form Main
@@ -37,7 +37,7 @@ public class SM_Page extends javax.swing.JFrame {
     private Form_SM_PurchaseOrderList form5;
     private String currentUserId;
     
-    public SM_Page(String userId) {
+    public IM_Page(String userId) {
         this.currentUserId = userId;
         initComponents();
         setBackground(new Color(0, 0, 0, 0));
@@ -47,7 +47,7 @@ public class SM_Page extends javax.swing.JFrame {
         form3 = new Form_SM_DailySalesEntry();
         form4 = new Form_SM_PurchaseRequisition(currentUserId);
         form5 = new Form_SM_PurchaseOrderList();
-        menu.initMoving(SM_Page.this);
+        menu.initMoving(IM_Page.this);
         menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
             public void selected(int index) {
@@ -72,7 +72,7 @@ public class SM_Page extends javax.swing.JFrame {
         setForm(new Form_SM_Dashboard());
     }
     
-    public SM_Page() {
+    public IM_Page() {
         this("default_user"); // Provide a default value or handle differently
     }
     
@@ -164,9 +164,9 @@ private void setForm(JComponent com) {
     private void initComponents() {
 
         panelBorder1 = new com.raven.swing.PanelBorder();
-        menu = new com.raven.component.SM_Menu();
         header2 = new com.raven.component.Header();
         mainPanel = new javax.swing.JPanel();
+        menu = new com.raven.component.IM_Menu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
@@ -181,22 +181,24 @@ private void setForm(JComponent com) {
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
                 .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(header2, javax.swing.GroupLayout.DEFAULT_SIZE, 965, Short.MAX_VALUE)
                     .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
+                        .addGap(0, 0, 0)
                         .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .addGap(0, 0, 0))))
         );
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addComponent(header2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -231,14 +233,78 @@ private void setForm(JComponent com) {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(IM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(IM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(IM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(IM_Page.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
@@ -308,7 +374,7 @@ private void setForm(JComponent com) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 // This is just for testing - in real usage, it will be called from Login
-                new SM_Page("test_user").setVisible(true);
+                new IM_Page("test_user").setVisible(true);
             }
         });
     }
@@ -316,7 +382,7 @@ private void setForm(JComponent com) {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.raven.component.Header header2;
     private javax.swing.JPanel mainPanel;
-    private com.raven.component.SM_Menu menu;
+    private com.raven.component.IM_Menu menu;
     private com.raven.swing.PanelBorder panelBorder1;
     // End of variables declaration//GEN-END:variables
 
