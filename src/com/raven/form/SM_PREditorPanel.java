@@ -17,14 +17,14 @@ import java.util.Date;
 import java.util.Map;
 import javax.swing.SpinnerDateModel;
 
-public class PREditorPanel extends JPanel {
+public class SM_PREditorPanel extends JPanel {
     private final PurchaseRequisition pr;
     private DefaultTableModel itemsModel;
     private JSpinner dateSpinner; // Using JSpinner as alternative to JXDatePicker
     // OR if using JXDatePicker:
     // private JXDatePicker datePicker;
     
-    public PREditorPanel(PurchaseRequisition pr) {
+    public SM_PREditorPanel(PurchaseRequisition pr) {
         this.pr = pr;
         initComponents();
         loadItems();

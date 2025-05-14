@@ -94,7 +94,7 @@ private void setupImageScaling() {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -102,7 +102,7 @@ private void setupImageScaling() {
         );
 
         jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 28)); // NOI18N
-        jLabel2.setText("Login123");
+        jLabel2.setText("Login");
 
         workIDTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -201,12 +201,28 @@ private void setupImageScaling() {
                 SM_Page dashboard = new SM_Page(user.getWorkID());
                 dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
                 dashboard.setVisible(true);
+                this.dispose();
             } 
             else if (role.equalsIgnoreCase("Finance Manager")) {
                 FM_Page dashboard = new FM_Page(user.getWorkID());
                 dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
                 dashboard.setVisible(true);
+                this.dispose();
             }
+            else if (role.equalsIgnoreCase("Purchase Manager")) {
+                PM_Page dashboard = new PM_Page(user.getWorkID());
+                dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
+                dashboard.setVisible(true);
+                this.dispose();
+            }
+            else if (role.equalsIgnoreCase("Inventory Manager")) {
+                IM_Page dashboard = new IM_Page(user.getWorkID());
+                dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
+                dashboard.setVisible(true);
+                this.dispose();
+            }
+            
+            else
             
             this.dispose();
         } else {
