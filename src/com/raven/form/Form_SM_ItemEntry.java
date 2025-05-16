@@ -87,6 +87,7 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
             new String[]{"Item Code", "Item Name", "Supplier", "Unit Price", "Action"}
         );
         table.setModel(model);
+        jTextField1.setText("");
         refreshTable();
 
         // Set up action buttons
@@ -149,24 +150,53 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
         refreshTable();
     }
     
-    // Modified file handling methods to use comma format
     private void loadItemsFromFile() {
         items.clear();
         File file = new File(FILE_NAME);
         if (!file.exists()) {
+            JOptionPane.showMessageDialog(this, "Items file not found at: " + file.getAbsolutePath(), 
+                "File Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
+            int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                // Skip empty lines
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
                 String[] parts = line.split(",");
-                if (parts.length == 4) {
-                    items.add(new Item(parts[0], parts[1], parts[2], parts[3]));
+                // Debug: Log the line being processed
+                System.out.println("Line " + lineNumber + ": " + line);
+
+                // Handle lines with at least 4 fields
+                if (parts.length >= 4) {
+                    try {
+                        // Validate fields
+                        String code = parts[0].trim();
+                        String name = parts[1].trim();
+                        String supplier = parts[2].trim();
+                        String unitPrice = parts[3].trim();
+
+                        // Check if supplier exists in supplierMap
+                        if (supplierMap.containsValue(supplier)) {
+                            items.add(new Item(code, name, supplier, unitPrice));
+                        } else {
+                            System.out.println("Skipping item at line " + lineNumber + ": Invalid supplier code " + supplier);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error parsing line " + lineNumber + ": " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("Skipping line " + lineNumber + ": Expected at least 4 fields, found " + parts.length);
                 }
             }
 
-            // Sort items by code to ensure proper sequencing
+            // Sort items by code
             items.sort((a, b) -> {
                 try {
                     int numA = Integer.parseInt(a.code.substring(2));
@@ -176,6 +206,12 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
                     return 0;
                 }
             });
+
+            // Debug: Log number of items loaded
+            System.out.println("Loaded " + items.size() + " items from " + FILE_NAME);
+
+            // Force table refresh
+            refreshTable();
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error loading items: " + e.getMessage(), 
@@ -492,6 +528,7 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -548,6 +585,13 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/AddItem.png"))); // NOI18N
 
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/refresh.png"))); // NOI18N
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -555,7 +599,7 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 742, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -564,7 +608,9 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 410, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton3)))
                 .addContainerGap())
         );
@@ -582,7 +628,8 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton2)
-                    .addComponent(jButton3))
+                    .addComponent(jButton3)
+                    .addComponent(jButton4))
                 .addContainerGap(14, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -591,10 +638,16 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1KeyReleased
 
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        loadSuppliers();
+        loadItemsFromFile();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
