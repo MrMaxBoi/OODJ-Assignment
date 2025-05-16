@@ -23,10 +23,10 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
+public class Form_IM_PurchaseOrderList extends javax.swing.JPanel {
     private List<PurchaseOrder> pos = new ArrayList<>();
     
-    public Form_SM_PurchaseOrderList() {
+    public Form_IM_PurchaseOrderList() {
         initComponents();
         loadPOs();
         initTable();
