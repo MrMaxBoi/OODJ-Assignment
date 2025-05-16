@@ -8,6 +8,7 @@ package com.raven.main;
 import com.raven.component.Header;
 import com.raven.form.Form_SM_ItemEntry;
 import com.raven.event.EventMenuSelected;
+import com.raven.form.Form_FM_PurchaseOrderList;
 import com.raven.form.Form_SM_SupplierManagement;
 import com.raven.form.Form_SM_DailySalesEntry;
 import com.raven.form.Form_SM_Dashboard;
@@ -30,7 +31,7 @@ public class FM_Page extends javax.swing.JFrame {
      */
     
     private Form_SM_Dashboard home;
-    private Form_SM_ItemEntry form1;
+    private Form_FM_PurchaseOrderList form1;
     private Form_SM_SupplierManagement form2;
     private Form_SM_DailySalesEntry form3;
     private Form_SM_PurchaseRequisition form4;
@@ -43,7 +44,7 @@ public class FM_Page extends javax.swing.JFrame {
         initComponents();
         setBackground(new Color(0, 0, 0, 0));
         home = new Form_SM_Dashboard();
-        form1 = new Form_SM_ItemEntry();
+        form1 = new Form_FM_PurchaseOrderList(userId);
         form2 = new Form_SM_SupplierManagement();
         form3 = new Form_SM_DailySalesEntry();
         form4 = new Form_SM_PurchaseRequisition(currentUserId);
@@ -79,35 +80,8 @@ public class FM_Page extends javax.swing.JFrame {
     
 private void logout() {
     // Check for unsaved changes in both forms
-    boolean hasUnsavedItemChanges = form1 != null && form1.hasUnsavedChanges;
     boolean hasUnsavedSupplierChanges = form2 != null && form2.hasUnsavedChanges;
     
-    if (hasUnsavedItemChanges || hasUnsavedSupplierChanges) {
-        StringBuilder message = new StringBuilder("You have unsaved changes in:");
-        if (hasUnsavedItemChanges) message.append("\n- Item Management");
-        if (hasUnsavedSupplierChanges) message.append("\n- Supplier Management");
-        message.append("\n\nDo you want to save before logging out?");
-        
-        int saveOption = JOptionPane.showConfirmDialog(
-            this,
-            message.toString(),
-            "Unsaved Changes",
-            JOptionPane.YES_NO_CANCEL_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-
-        if (saveOption == JOptionPane.YES_OPTION) {
-            // Save both forms silently during logout
-            boolean itemSaved = form1 != null && form1.hasUnsavedChanges ? form1.saveItemsToFile(true) : true;
-            boolean supplierSaved = form2 != null && form2.hasUnsavedChanges ? form2.saveSuppliersToFile(true) : true;
-            
-            if (!itemSaved || !supplierSaved) {
-                return; // Don't proceed with logout if any save failed
-            }
-        } else if (saveOption == JOptionPane.CANCEL_OPTION) {
-            return; // Cancel logout
-        }
-        // If NO, continue with logout without saving
-    }
 
     // Only show logout confirmation if we didn't just handle unsaved changes
     int confirm = JOptionPane.showConfirmDialog(

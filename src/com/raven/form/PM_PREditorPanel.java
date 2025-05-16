@@ -7,6 +7,7 @@ package com.raven.form;
 import com.raven.cell.TableActionCellEditor;
 import com.raven.cell.TableActionCellRender;
 import com.raven.cell.TableActionEvent;
+import com.raven.data.ItemManager;
 import com.raven.data.PurchaseRequisition;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -74,18 +75,16 @@ public class PM_PREditorPanel extends JPanel {
     }
     
     private void loadItems() {
-        itemsModel.setRowCount(0);
-        for (Map.Entry<String, Integer> entry : pr.getItems().entrySet()) {
-            // In a real implementation, you would look up the item name from your items database
-            String itemName = "Item " + entry.getKey(); // Placeholder - replace with actual lookup
-            itemsModel.addRow(new Object[]{
-                entry.getKey(),
-                itemName,
-                entry.getValue(),
-                "Remove"
-            });
-        }
+    itemsModel.setRowCount(0);
+    for (Map.Entry<String, Integer> entry : pr.getItems().entrySet()) {
+        String itemName = ItemManager.getItemName(entry.getKey());
+        itemsModel.addRow(new Object[]{
+            entry.getKey(),
+            itemName,
+            entry.getValue()
+        });
     }
+}
     
     public void updatePR() {
     // Update the date
