@@ -13,7 +13,7 @@ import com.raven.form.Form_IM_PurchaseOrderList;
 import com.raven.form.Form_SM_PurchaseOrderList;
 import com.raven.form.Form_SM_SupplierManagement;
 import com.raven.form.Form_SM_DailySalesEntry;
-import com.raven.form.Form_SM_Dashboard;
+import com.raven.form.Form_IM_Dashboard;
 import com.raven.form.Form_SM_PurchaseOrderList;
 import com.raven.form.Form_SM_PurchaseRequisition;
 import java.awt.Color;
@@ -31,7 +31,7 @@ public class IM_Page extends javax.swing.JFrame {
      * Creates new form Main
      */
     
-    private Form_SM_Dashboard home;
+    private Form_IM_Dashboard home;
     private Form_IM_ItemEntry form1;
     private Form_IM_PurchaseOrderList form2;
     private String currentUserId;
@@ -40,7 +40,7 @@ public class IM_Page extends javax.swing.JFrame {
         this.currentUserId = userId;
         initComponents();
         setBackground(new Color(0, 0, 0, 0));
-        home = new Form_SM_Dashboard();
+        home = new Form_IM_Dashboard();
         form1 = new Form_IM_ItemEntry();
         form2 = new Form_IM_PurchaseOrderList();
         menu.initMoving(IM_Page.this);
@@ -59,7 +59,7 @@ public class IM_Page extends javax.swing.JFrame {
             }
         });
         
-        setForm(new Form_SM_Dashboard());
+        setForm(new Form_IM_Dashboard());
     }
     
     public IM_Page() {

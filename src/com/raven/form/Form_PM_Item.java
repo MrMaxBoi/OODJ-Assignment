@@ -98,24 +98,53 @@ public class Form_PM_Item extends javax.swing.JPanel {
         refreshTable();
     }
     
-    // Modified file handling methods to use comma format
     private void loadItemsFromFile() {
         items.clear();
         File file = new File(FILE_NAME);
         if (!file.exists()) {
+            JOptionPane.showMessageDialog(this, "Items file not found at: " + file.getAbsolutePath(), 
+                "File Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
+            int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                // Skip empty lines
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
                 String[] parts = line.split(",");
-                if (parts.length == 4) {
-                    items.add(new Item(parts[0], parts[1], parts[2], parts[3]));
+                // Debug: Log the line being processed
+                System.out.println("Line " + lineNumber + ": " + line);
+
+                // Handle lines with at least 4 fields
+                if (parts.length >= 4) {
+                    try {
+                        // Validate fields
+                        String code = parts[0].trim();
+                        String name = parts[1].trim();
+                        String supplier = parts[2].trim();
+                        String unitPrice = parts[3].trim();
+
+                        // Check if supplier exists in supplierMap
+                        if (supplierMap.containsValue(supplier)) {
+                            items.add(new Item(code, name, supplier, unitPrice));
+                        } else {
+                            System.out.println("Skipping item at line " + lineNumber + ": Invalid supplier code " + supplier);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error parsing line " + lineNumber + ": " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("Skipping line " + lineNumber + ": Expected at least 4 fields, found " + parts.length);
                 }
             }
 
-            // Sort items by code to ensure proper sequencing
+            // Sort items by code
             items.sort((a, b) -> {
                 try {
                     int numA = Integer.parseInt(a.code.substring(2));
@@ -125,6 +154,12 @@ public class Form_PM_Item extends javax.swing.JPanel {
                     return 0;
                 }
             });
+
+            // Debug: Log number of items loaded
+            System.out.println("Loaded " + items.size() + " items from " + FILE_NAME);
+
+            // Force table refresh
+            refreshTable();
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error loading items: " + e.getMessage(), 
