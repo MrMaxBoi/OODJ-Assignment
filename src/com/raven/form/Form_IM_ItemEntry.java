@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 
@@ -43,6 +45,7 @@ import javax.swing.JTextField;
 public class Form_IM_ItemEntry extends javax.swing.JPanel {
     private List<Item> items = new ArrayList<>();
     private static final String FILE_NAME = "items.txt";
+    private static final String LOG_FILE_NAME = "logs.txt";
     public boolean hasUnsavedChanges = false;
     private Map<String, String> supplierMap; // Maps display text to supplier code
     
@@ -144,6 +147,82 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
     
    
    
+    
+    // Add this method to log changes
+    private void logChange(String action, String itemName, String details) {
+        String timestamp = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new java.util.Date());
+        String logEntry = String.format("%s - %s: %s (%s)", timestamp, action, itemName, details);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_NAME, true))) {
+            writer.write(logEntry);
+            writer.newLine();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error writing to log file: " + e.getMessage(),
+                "Log Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+   
+    // Add this method to show the log viewer
+        private void showUpdateLog() {
+            JDialog logDialog = new JDialog();
+            logDialog.setTitle("Updated Log");
+            logDialog.setModal(true);
+            logDialog.setSize(800, 500);
+            logDialog.setLayout(new BorderLayout());
+
+            // Create text area for logs
+            JTextArea logTextArea = new JTextArea();
+            logTextArea.setEditable(false);
+            logTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            JScrollPane scrollPane = new JScrollPane(logTextArea);
+
+    // Load log content
+        try {
+            File logFile = new File(LOG_FILE_NAME);
+            if (logFile.exists()) {
+                List<String> logLines = java.nio.file.Files.readAllLines(logFile.toPath());
+                Collections.reverse(logLines); // Show newest first
+                logTextArea.setText(String.join("\n", logLines));
+            } else {
+                logTextArea.setText("No update logs found.");
+            }
+        } catch (IOException e) {
+            logTextArea.setText("Error loading logs: " + e.getMessage());
+        }
+
+        // Add refresh button
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> {
+            try {
+                File logFile = new File(LOG_FILE_NAME);
+                if (logFile.exists()) {
+                    List<String> logLines = java.nio.file.Files.readAllLines(logFile.toPath());
+                    Collections.reverse(logLines);
+                    logTextArea.setText(String.join("\n", logLines));
+                }
+            } catch (IOException ex) {
+                logTextArea.setText("Error refreshing logs: " + ex.getMessage());
+            }
+        });
+
+        // Add close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> logDialog.dispose());
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(refreshButton);
+        buttonPanel.add(closeButton);
+
+        // Add components to dialog
+        logDialog.add(scrollPane, BorderLayout.CENTER);
+        logDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        logDialog.setLocationRelativeTo(this);
+        logDialog.setVisible(true);
+    }
+    
+    
     
     private void generateStockReport() {
     // Create the dialog
@@ -287,21 +366,31 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
     
     // New methods for stock management
     private void incrementStock(int row) {
+        if (row >= 0 && row < items.size()){
         Item item = items.get(row);
+        int oldValue = item.currentStock;
         item.currentStock++;
         hasUnsavedChanges = true;
         refreshTable();
+        logChange("Stock Increased", item.name, 
+            String.format("Quantity changed from %d to %d", oldValue, item.currentStock));
+        }
     }
     
     private void decrementStock(int row) {
+        if (row >= 0 && row < items.size()) {
         Item item = items.get(row);
-        if (item.currentStock > 0) {
-            item.currentStock--;
-            hasUnsavedChanges = true;
-            refreshTable();
-        } else {
-            JOptionPane.showMessageDialog(this, "Stock cannot be negative", 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            if (item.currentStock > 0) {
+                int oldValue = item.currentStock;
+                item.currentStock--;
+                hasUnsavedChanges = true;
+                refreshTable();
+                logChange("Stock Decreased", item.name, 
+                String.format("Quantity changed from %d to %d", oldValue, item.currentStock));
+            } else {
+                JOptionPane.showMessageDialog(this, "Stock cannot be negative", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -477,7 +566,24 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
                 item.currentStock = Integer.parseInt(stockField.getText());
                 item.maxStock = Integer.parseInt(maxStockField.getText());
                 item.lowStockLevel = Integer.parseInt(lowStockField.getText());
-
+                int oldStock = item.currentStock;
+                int oldMaxStock = item.maxStock;
+                int oldLowLevel = item.lowStockLevel;
+                
+                
+                if (oldStock != item.currentStock) {
+                    logChange("Stock Updated", item.name, 
+                        String.format("Quantity changed from %d to %d", oldStock, item.currentStock));
+                }
+                if (oldMaxStock != item.maxStock) {
+                    logChange("Max Stock Updated", item.name, 
+                        String.format("Changed from %d to %d", oldMaxStock, item.maxStock));
+                }
+                if (oldLowLevel != item.lowStockLevel) {
+                    logChange("Low Level Updated", item.name, 
+                        String.format("Changed from %d to %d", oldLowLevel, item.lowStockLevel));
+                }
+                
                 hasUnsavedChanges = true;
                 refreshTable();
                 editDialog.dispose();
@@ -526,6 +632,8 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
                 supplier.removeItemSupplied(itemToDelete.code);
                 SupplierRepository.updateSupplier(supplier);
             }
+            logChange("Item Deleted", itemToDelete.name, 
+                    String.format("Code: %s was removed from inventory", itemToDelete.code));
             
             items.remove(row);
             hasUnsavedChanges = true;
@@ -631,6 +739,8 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
                 items.add(newItem);
                 hasUnsavedChanges = true;
                 refreshTable();
+                logChange("New Item Added", newItem.name, 
+                    String.format("Code: %s, Initial Stock: %d", newItem.code, newItem.currentStock));
                 addDialog.dispose();
 
             } catch (NumberFormatException ex) {
@@ -642,6 +752,7 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
                     "Error updating supplier data: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
+            
         });
 
         cancelButton.addActionListener(e -> addDialog.dispose());
@@ -695,6 +806,7 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -758,6 +870,14 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
             }
         });
 
+        jButton4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jButton4.setText("View Updated Log");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -773,8 +893,9 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jButton2)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(56, 56, 56)
+                        .addComponent(jButton4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton3)))
                 .addContainerGap())
@@ -793,6 +914,7 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton4)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(14, Short.MAX_VALUE))
         );
@@ -807,10 +929,16 @@ public class Form_IM_ItemEntry extends javax.swing.JPanel {
         generateStockReport();
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+        showUpdateLog();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
