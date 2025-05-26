@@ -6,14 +6,12 @@
 package com.raven.main;
 
 import com.raven.component.Header;
-import com.raven.form.Form_SM_ItemEntry;
+import com.raven.form.Form_FM_Dashboard;
 import com.raven.event.EventMenuSelected;
-import com.raven.form.Form_FM_PurchaseOrderList;
-import com.raven.form.Form_SM_SupplierManagement;
-import com.raven.form.Form_SM_DailySalesEntry;
-import com.raven.form.Form_SM_Dashboard;
-import com.raven.form.Form_SM_PurchaseOrderList;
-import com.raven.form.Form_SM_PurchaseRequisition;
+import com.raven.form.Form_FM_PurchaseOrder;
+import com.raven.form.Form_FM_PurchaseRequisition;
+import com.raven.form.Form_FM_Payments;
+import com.raven.form.Form_FM_Report;
 import java.awt.Color;
 import java.awt.Component;
 import static java.awt.SystemColor.menu;
@@ -30,25 +28,22 @@ public class FM_Page extends javax.swing.JFrame {
      * Creates new form Main
      */
     
-    private Form_SM_Dashboard home;
-    private Form_FM_PurchaseOrderList form1;
-    private Form_SM_SupplierManagement form2;
-    private Form_SM_DailySalesEntry form3;
-    private Form_SM_PurchaseRequisition form4;
-    private Form_SM_PurchaseOrderList form5;
-    private Form_SM_PurchaseOrderList form6;
+    private Form_FM_Dashboard home;
+    private Form_FM_PurchaseRequisition form1;
+    private Form_FM_PurchaseOrder form2;
+    private Form_FM_Payments form3;
+    private Form_FM_Report form4;
     private String currentUserId;
     
     public FM_Page(String userId) {
         this.currentUserId = userId;
         initComponents();
         setBackground(new Color(0, 0, 0, 0));
-        home = new Form_SM_Dashboard();
-        form1 = new Form_FM_PurchaseOrderList(userId);
-        form2 = new Form_SM_SupplierManagement();
-        form3 = new Form_SM_DailySalesEntry();
-        form4 = new Form_SM_PurchaseRequisition(currentUserId);
-        form5 = new Form_SM_PurchaseOrderList();
+        home = new Form_FM_Dashboard();
+        form1 = new Form_FM_PurchaseRequisition();
+        form2 = new Form_FM_PurchaseOrder(userId);
+        form3 = new Form_FM_Payments(userId);
+        form4 = new Form_FM_Report();
         menu.initMoving(FM_Page.this);
         menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
@@ -63,15 +58,13 @@ public class FM_Page extends javax.swing.JFrame {
                     setForm(form3);
                 } else if (index == 4) {
                     setForm(form4);
-                } else if (index == 5) {
-                    setForm(form5);
                 } else if (index == 15) {
                     logout();
                 }
             }
         });
         
-        setForm(new Form_SM_Dashboard());
+        setForm(new Form_FM_Dashboard());
     }
     
     public FM_Page() {
@@ -100,29 +93,24 @@ private void logout() {
 }
 
 private void setForm(JComponent com) {
-    // Check for unsaved changes in the current form before switching
+    // Check for unsaved changes only if current form is Form_FM_PurchaseOrder
     if (mainPanel.getComponentCount() > 0) {
         Component current = mainPanel.getComponent(0);
-        
-        if (current instanceof Form_SM_ItemEntry) {
-            Form_SM_ItemEntry currentForm = (Form_SM_ItemEntry)current;
-            if (!currentForm.checkUnsavedChanges()) {
-                return; // Abort the form switch if user cancels
-            }
-        } else if (current instanceof Form_SM_SupplierManagement) {
-            Form_SM_SupplierManagement currentForm = (Form_SM_SupplierManagement)current;
+
+        if (current instanceof Form_FM_PurchaseOrder) {
+            Form_FM_PurchaseOrder currentForm = (Form_FM_PurchaseOrder) current;
             if (!currentForm.checkUnsavedChanges()) {
                 return; // Abort the form switch if user cancels
             }
         }
     }
-    
+
     mainPanel.removeAll();
     mainPanel.add(com);
     mainPanel.repaint();
     mainPanel.revalidate();
-   
 }
+
     
     
 
