@@ -28,5 +28,10 @@ public class PurchaseOrder {
     public String getRaisedBy() { return raisedBy; }
     public String getStatus() { return status; }
     public List<POItem> getItems() { return items; }
+    
+    //Setter for Status
+    public void setStatus(String status){
+        this.status = status;
+    }
 }
 

@@ -22,6 +22,7 @@ public class PM_PREditorPanel extends JPanel {
     private final PurchaseRequisition pr;
     private DefaultTableModel itemsModel;
     private JSpinner dateSpinner; // Using JSpinner as alternative to JXDatePicker
+    private JTable itemsTable;
     // OR if using JXDatePicker:
     // private JXDatePicker datePicker;
     
@@ -67,7 +68,7 @@ public class PM_PREditorPanel extends JPanel {
             new Object[]{"Item Code", "Item Name", "Quantity"}, 0) {
         };
         
-        JTable itemsTable = new JTable(itemsModel);
+        itemsTable = new JTable(itemsModel);
         itemsTable.setRowHeight(30);
         
         add(infoPanel, BorderLayout.NORTH);
@@ -84,6 +85,15 @@ public class PM_PREditorPanel extends JPanel {
             entry.getValue()
         });
     }
+}
+    public void setEditable(boolean editable) {
+    dateSpinner.setEnabled(editable); // or datePicker.setEnabled(editable) if used
+    
+    // Make the table cells editable or not
+    itemsTable.setEnabled(editable);
+    
+    // Optional: visually gray it out when not editable
+    itemsTable.setBackground(editable ? Color.WHITE : UIManager.getColor("Panel.background"));
 }
     
     public void updatePR() {
