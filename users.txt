@@ -6,5 +6,5 @@ PM001,Alice,p1,Purchase Manager
 PM002,Jabu,password123,Purchase Manager
 FM001,Bruce,1234,Finance Manager
 FM002,Connie,password123,Finance Manager
-IM001,Jayson,password123,Inventory Manager
+IM001,Jayson,123,Inventory Manager
 IM002,Axel,password123,Inventory Manager
