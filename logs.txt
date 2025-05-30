@@ -8,3 +8,7 @@
 17/05/2025 02:50:22 - Stock Increased: Wheat (Quantity changed from 78 to 79)
 17/05/2025 02:50:30 - Stock Decreased: Milk (Quantity changed from 80 to 79)
 17/05/2025 02:50:30 - Stock Decreased: Milk (Quantity changed from 79 to 78)
+28/05/2025 11:31:23 - Stock Increased: Milk (Quantity changed from 80 to 81)
+28/05/2025 11:31:23 - Stock Increased: Milk (Quantity changed from 81 to 82)
+28/05/2025 11:31:23 - Stock Increased: Milk (Quantity changed from 82 to 83)
+28/05/2025 11:31:23 - Stock Increased: Milk (Quantity changed from 83 to 84)
