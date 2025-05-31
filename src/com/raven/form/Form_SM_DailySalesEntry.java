@@ -112,7 +112,7 @@ public class Form_SM_DailySalesEntry extends javax.swing.JPanel {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split(",");
-            if (parts.length == 4) {
+            if (parts.length >= 4) {
                 items.add(new Item(parts[0], parts[1], parts[2], parts[3]));
             }
         }
