@@ -4,6 +4,7 @@
  */
 package com.raven.form;
 
+import com.raven.data.ItemManager;
 import com.raven.data.POItem;
 import com.raven.data.PurchaseOrder;
 import com.raven.data.PurchaseRequisition;
@@ -56,11 +57,25 @@ public class PM_POEditorPanel extends JPanel {
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "dd/MM/yyyy");
         dateSpinner.setEditor(dateEditor);
         
+        // In PM_POEditorPanel.java, modify the initComponents() method:
         JLabel prLabel = new JLabel("Based on PR:");
         prComboBox = new JComboBox<>();
         for (PurchaseRequisition pr : approvedPRs) {
             prComboBox.addItem(pr);
+            // Set the display to show PR ID
+            prComboBox.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (value instanceof PurchaseRequisition) {
+                        PurchaseRequisition pr = (PurchaseRequisition) value;
+                        setText(pr.getPrId()); // Show only the PR ID
+                    }
+                    return this;
+                }
+            });
         }
+        
         prComboBox.addActionListener(e -> {
             if (prComboBox.getSelectedItem() != null) {
                 loadItemsFromPR((PurchaseRequisition) prComboBox.getSelectedItem());
@@ -106,38 +121,33 @@ public class PM_POEditorPanel extends JPanel {
     }
     
     private void loadItems() {
-        itemsModel.setRowCount(0);
-        for (POItem item : po.getItems()) {
-            // In a real implementation, you would look up the item name from your items database
-            String itemName = "Item " + item.getItemCode(); // Placeholder - replace with actual lookup
-            itemsModel.addRow(new Object[]{
-                item.getItemCode(),
-                itemName,
-                item.getQuantity()
-            });
-        }
+    itemsModel.setRowCount(0);
+    for (POItem item : po.getItems()) {
+        String itemName = ItemManager.getItemName(item.getItemCode());
+        itemsModel.addRow(new Object[]{
+            item.getItemCode(),
+            itemName,
+            item.getQuantity()
+        });
     }
-    
-    private void loadItemsFromPR(PurchaseRequisition pr) {
-        po.getItems().clear();
-        itemsModel.setRowCount(0);
-        
-        for (Map.Entry<String, Integer> entry : pr.getItems().entrySet()) {
-            po.getItems().add(new POItem(entry.getKey(), entry.getValue()));
-            
-            // In a real implementation, you would look up the item name from your items database
-            String itemName = "Item " + entry.getKey(); // Placeholder - replace with actual lookup
-            itemsModel.addRow(new Object[]{
-                entry.getKey(),
-                itemName,
-                entry.getValue()
-            });
-        }
-    }
-    
-    public void updatePO() {
+}
 
-        
+    private void loadItemsFromPR(PurchaseRequisition pr) {
+    po.getItems().clear();
+    itemsModel.setRowCount(0);
+    
+    for (Map.Entry<String, Integer> entry : pr.getItems().entrySet()) {
+        po.getItems().add(new POItem(entry.getKey(), entry.getValue()));
+        String itemName = ItemManager.getItemName(entry.getKey());
+        itemsModel.addRow(new Object[]{
+            entry.getKey(),
+            itemName,
+            entry.getValue()
+        });
+    }
+}
+    
+    public void updatePO() {        
         // Update quantities from the table
         for (int i = 0; i < itemsModel.getRowCount(); i++) {
             String itemCode = (String) itemsModel.getValueAt(i, 0);
@@ -152,4 +162,4 @@ public class PM_POEditorPanel extends JPanel {
             }
         }
     }
-}
+} 

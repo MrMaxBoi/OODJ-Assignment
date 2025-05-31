@@ -5,6 +5,7 @@ import com.raven.cell.TableActionCellRender;
 import com.raven.cell.TableActionEvent;
 import com.raven.data.POItem;
 import com.raven.data.PurchaseOrder;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +15,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -96,7 +100,7 @@ public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
             @Override
             public void onAction(int row, String actionCommand) {
                 if ("View".equals(actionCommand)) {
-                    // Will implement later
+                    showViewDialog(row);
                 }
             }
         };
@@ -127,6 +131,32 @@ public class Form_SM_PurchaseOrderList extends javax.swing.JPanel {
             });
         }
     }
+    
+    private void showViewDialog(int row) {
+    PurchaseOrder po = pos.get(row);
+    
+    JDialog dialog = new JDialog();
+    dialog.setTitle("View Purchase Order - " + po.getPoId());
+    dialog.setModal(true);
+    dialog.setLayout(new BorderLayout());
+    
+    // Create view panel (read-only)
+    // We'll use an empty list for approved PRs since we're just viewing
+    PM_POEditorPanel viewPanel = new PM_POEditorPanel(po, new ArrayList<>());
+    viewPanel.setEditable(false);
+    dialog.add(viewPanel, BorderLayout.CENTER);
+    
+    // Close button
+    JPanel buttonPanel = new JPanel();
+    JButton closeButton = new JButton("Close");
+    closeButton.addActionListener(e -> dialog.dispose());
+    buttonPanel.add(closeButton);
+    dialog.add(buttonPanel, BorderLayout.SOUTH);
+    
+    dialog.pack();
+    dialog.setLocationRelativeTo(this);
+    dialog.setVisible(true);
+}
 
     /**
      * This method is called from within the constructor to initialize the form.

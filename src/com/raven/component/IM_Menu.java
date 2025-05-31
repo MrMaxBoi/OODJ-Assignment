@@ -24,13 +24,13 @@ public class IM_Menu extends javax.swing.JPanel {
     }
 
     private void init() {
-        listMenu1.addItem(new Model_Menu("1", "Jayson", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("5", "Item Management", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("8", "Supplier Management", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("6", "Daily Sales Entry", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("3", "Purchase Requisition", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("2", "Purchase Order List", Model_Menu.MenuType.MENU));
-        
+        listMenu1.addItem(new Model_Menu("1", "Dashboard", Model_Menu.MenuType.MENU));
+        listMenu1.addItem(new Model_Menu("5", "Item Stock Management", Model_Menu.MenuType.MENU));
+        listMenu1.addItem(new Model_Menu("8", "Purchase Order List", Model_Menu.MenuType.MENU));
+
+        listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
+        listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
+        listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));

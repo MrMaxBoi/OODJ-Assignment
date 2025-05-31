@@ -1,10 +1,11 @@
 admin,Max Hao Hean,hi,Adminstrator
-SM001,John Pork,password123,Sales Manager
+SM001,John Pork,s1,Sales Manager
 SM002,Dave,password123,Sales Manager
 SM003,Jack,password123,Sales Manager
-PM001,Alice,password123,Purchase Manager
+PM001,Alice,p1,Purchase Manager
 PM002,Jabu,password123,Purchase Manager
-FM001,Bruce,password123,Finance Manager
+FM001,Bruce,1234,Finance Manager
 FM002,Connie,password123,Finance Manager
-IM001,Jayson,password123,Inventory Manager
+IM001,Jayson,123,Inventory Manager
 IM002,Axel,password123,Inventory Manager
+
