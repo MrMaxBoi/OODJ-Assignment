@@ -9,7 +9,10 @@ import com.raven.component.Header;
 import com.raven.form.Form_SM_ItemEntry;
 import com.raven.event.EventMenuSelected;
 import com.raven.form.Form_ADMIN_AccountManagement;
+import com.raven.form.Form_ADMIN_Payments;
+import com.raven.form.Form_ADMIN_PurchaseOrder;
 import com.raven.form.Form_ADMIN_PurchaseRequisition;
+import com.raven.form.Form_ADMIN_Report;
 import com.raven.form.Form_ADMIN_SupplierManagement;
 import com.raven.form.Form_IM_ItemEntry;
 import com.raven.form.Form_SM_PurchaseOrderList;
@@ -39,7 +42,9 @@ public class ADMIN_Page extends javax.swing.JFrame {
     private Form_ADMIN_SupplierManagement form3;
     private Form_SM_DailySalesEntry form4;
     private Form_ADMIN_PurchaseRequisition form5;
-    private Form_SM_PurchaseOrderList form6;
+    private Form_ADMIN_PurchaseOrder form6;
+    private Form_ADMIN_Payments form7;
+    private Form_ADMIN_Report form8;
     private String currentUserId;
     
     public ADMIN_Page(String userId) {
@@ -52,7 +57,9 @@ public class ADMIN_Page extends javax.swing.JFrame {
         form3 = new Form_ADMIN_SupplierManagement();
         form4 = new Form_SM_DailySalesEntry();
         form5 = new Form_ADMIN_PurchaseRequisition(currentUserId);
-        form6 = new Form_SM_PurchaseOrderList();
+        form6 = new Form_ADMIN_PurchaseOrder(userId);
+        form7 = new Form_ADMIN_Payments(userId);
+        form8 = new Form_ADMIN_Report();
         menu.initMoving(ADMIN_Page.this);
         menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
@@ -71,7 +78,11 @@ public class ADMIN_Page extends javax.swing.JFrame {
                     setForm(form5);
                 } else if (index == 6) {
                     setForm(form6);
-                    
+                } else if (index == 7) {
+                    setForm(form7);
+                } else if (index == 8) {
+                    setForm(form8);
+                      
                 } else if (index == 15) {
                     logout();
                 }

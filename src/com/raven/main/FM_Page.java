@@ -99,7 +99,7 @@ private void setForm(JComponent com) {
 
         if (current instanceof Form_FM_PurchaseOrder) {
             Form_FM_PurchaseOrder currentForm = (Form_FM_PurchaseOrder) current;
-            if (!currentForm.checkUnsavedChanges()) {
+            if (currentForm.checkUnsavedChanges()) {
                 return; // Abort the form switch if user cancels
             }
         }
@@ -110,12 +110,6 @@ private void setForm(JComponent com) {
     mainPanel.repaint();
     mainPanel.revalidate();
 }
-
-    
-    
-
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
