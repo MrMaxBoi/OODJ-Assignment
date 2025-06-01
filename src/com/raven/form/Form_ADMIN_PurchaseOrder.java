@@ -37,7 +37,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 
-public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
+public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
     private List<PurchaseOrder> pos = new ArrayList<>();
     public boolean hasUnsavedChanges = false;
     public String currentUserId;
@@ -51,7 +51,7 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
         this.status = status;
     }
     
-    public Form_FM_PurchaseOrder(String userId) {
+    public Form_ADMIN_PurchaseOrder(String userId) {
         this.currentUserId = userId;
         initComponents();
         loadPOs();
@@ -159,16 +159,19 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
                     case "Reject":
                         rejectPO(row);
                         break;
+                    case "Delete":
+                        deletePO(row);
                 }
             }
         };
 
-        String[] buttonNames = {"View", "Edit", "Approve","Reject"};
+        String[] buttonNames = {"View", "Edit", "Approve","Reject","Delete"};
         String[] icons = {
             "/com/raven/icon/view.png",
             "/com/raven/icon/edit.png",
             "/com/raven/icon/correct.png",
-            "/com/raven/icon/wrong.png"
+            "/com/raven/icon/wrong.png",
+            "/com/raven/icon/delete.png"
         };
 
         table.getColumnModel().getColumn(5).setCellRenderer(
@@ -242,6 +245,67 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
         }
     }
     
+    private void showAddDialog() {
+        try {
+            // Load approved PRs
+            List<PurchaseRequisition> allPRs = PurchaseRequisitionRepository.loadPRs();
+            List<PurchaseRequisition> approvedPRs = allPRs.stream()
+                .filter(pr -> "Approved".equals(pr.getStatus()))
+                .collect(Collectors.toList());
+            
+            if (approvedPRs.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No approved PRs available to create PO", 
+                    "Information", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            JDialog dialog = new JDialog();
+            dialog.setTitle("New Purchase Order");
+            dialog.setModal(true);
+            dialog.setLayout(new BorderLayout());
+            
+            // Create empty PO
+            List<POItem> items = new ArrayList<>();
+            PurchaseOrder newPO = new PurchaseOrder(
+                generateNextPOId(),
+                new Date(),
+                currentUserId,
+                "Pending",
+                items
+            );
+            
+            // Create editor panel
+            PM_POEditorPanel editorPanel = new PM_POEditorPanel(newPO, approvedPRs);
+            dialog.add(editorPanel, BorderLayout.CENTER);
+            
+            // Save button
+            JPanel buttonPanel = new JPanel();
+            JButton saveButton = new JButton("Save");
+            JButton cancelButton = new JButton("Cancel");
+            
+            saveButton.addActionListener(e -> {
+                editorPanel.updatePO();
+                pos.add(newPO);
+                hasUnsavedChanges = true;
+                refreshTable();
+                dialog.dispose();
+            });
+            
+            cancelButton.addActionListener(e -> dialog.dispose());
+            
+            buttonPanel.add(saveButton);
+            buttonPanel.add(cancelButton);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+            
+            dialog.pack();
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error creating PO: " + ex.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     private void showViewDialog(int row) {
         PurchaseOrder po = pos.get(row);
         
@@ -293,6 +357,28 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
         }
     }
     
+    private void deletePO(int row) {
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Are you sure you want to delete this PO?", 
+            "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            pos.remove(row);
+            hasUnsavedChanges = true;
+            refreshTable();
+        }
+    }
+    
+    private String generateNextPOId() throws IOException {
+        if (pos.isEmpty()) {
+            return "PO001";
+        }
+        
+        String lastId = pos.get(pos.size() - 1).getPoId();
+        int number = Integer.parseInt(lastId.substring(2));
+        return String.format("PO%03d", number + 1);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -307,6 +393,7 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         refreshButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
+        addButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -326,7 +413,7 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
 
         jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 36)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel1.setText("Purchase Order List");
+        jLabel1.setText("Purchase Order");
 
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/refresh.png"))); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
@@ -342,6 +429,13 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
             }
         });
 
+        addButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/AddItem.png"))); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -354,9 +448,10 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
                         .addComponent(jLabel1)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(refreshButton)
+                        .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(refreshButton)
+                        .addGap(218, 218, 218)
                         .addComponent(saveButton)))
                 .addContainerGap())
         );
@@ -370,7 +465,8 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(refreshButton)
-                    .addComponent(saveButton))
+                    .addComponent(saveButton)
+                    .addComponent(addButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -392,8 +488,13 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        showAddDialog();
+    }//GEN-LAST:event_addButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton refreshButton;
@@ -402,6 +503,6 @@ public class Form_FM_PurchaseOrder extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public boolean checkUnsavedChanges() {
-        return false;
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
