@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -79,30 +80,43 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         double totalExpenditure = 0.0;
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("processed_po.txt"))) {
+        File file = new File("processed_po.txt");
+        // If the file does not exist, return 0.0 immediately:
+        if (!file.exists()) {
+            return 0.0;
+        }
+
+        // Otherwise, proceed to open & read it:
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                // Format: PO001|1746633600000|PM001|Processed|IC005:2,IC011:4|21.20
                 String[] parts = line.split("\\|");
                 if (parts.length >= 6) {
                     long timestamp;
                     try {
                         timestamp = Long.parseLong(parts[1]);
                     } catch (NumberFormatException nfe) {
-                        continue;
+                        continue; // skip malformed line
                     }
+                    // Compare the PO’s date to “today”:
                     String recordDate = new SimpleDateFormat("yyyy-MM-dd")
                                             .format(new Date(timestamp));
                     if (today.equals(recordDate)) {
                         try {
                             totalExpenditure += Double.parseDouble(parts[5]);
                         } catch (NumberFormatException nfe) {
+                            // skip if amount is malformed
                         }
                     }
                 }
             }
         } catch (IOException e) {
+            // If anything else goes wrong (permission, etc.), print it once and return 0
             e.printStackTrace();
+            return 0.0;
         }
+
         return totalExpenditure;
     }
     

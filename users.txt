@@ -8,4 +8,3 @@ FM001,Bruce,1,Finance Manager
 FM002,Connie,2,Finance Manager
 IM001,Jayson,123,Inventory Manager
 IM002,Axel,password123,Inventory Manager
-
