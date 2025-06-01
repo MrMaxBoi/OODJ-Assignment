@@ -503,6 +503,6 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public boolean checkUnsavedChanges() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return false;
     }
 }

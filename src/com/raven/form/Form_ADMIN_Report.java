@@ -28,6 +28,7 @@ import com.raven.form.Form_FM_Report.POEntry;
 
 public class Form_ADMIN_Report extends javax.swing.JPanel {
    
+    private final String currentUser;
     private final List<String[]> financialReports = new ArrayList<>();
 
     public void reload() {
@@ -35,7 +36,8 @@ public class Form_ADMIN_Report extends javax.swing.JPanel {
         refreshTable();
     }
     
-    public Form_ADMIN_Report() {
+    public Form_ADMIN_Report(String userId) {
+        this.currentUser = userId;
         initComponents();
         Genearate_Report_Button.setText("Generate Report");
         for (ActionListener al : Genearate_Report_Button.getActionListeners()) {
@@ -339,9 +341,9 @@ public class Form_ADMIN_Report extends javax.swing.JPanel {
     
         // --- 4) record this report in your list file ---
         String generatedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        String user = System.getProperty("user.name");  // or your session manager
+        String user = this.currentUser;
         try(PrintWriter pw = new PrintWriter(new FileWriter("financial_report_list.txt", true))) {
-            pw.println(frid + "|" + generatedAt + "|" + user);
+            pw.println(frid + "|" + generatedAt + "|" + currentUser);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this,
             "Error writing financial_report_list.txt:\n" + ex.getMessage(),
