@@ -59,7 +59,7 @@ public class ADMIN_Page extends javax.swing.JFrame {
         form5 = new Form_ADMIN_PurchaseRequisition(currentUserId);
         form6 = new Form_ADMIN_PurchaseOrder(userId);
         form7 = new Form_ADMIN_Payments(userId);
-        form8 = new Form_ADMIN_Report();
+        form8 = new Form_ADMIN_Report(currentUserId);
         menu.initMoving(ADMIN_Page.this);
         menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
