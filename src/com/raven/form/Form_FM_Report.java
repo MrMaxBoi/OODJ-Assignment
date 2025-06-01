@@ -149,11 +149,9 @@ public class Form_FM_Report extends javax.swing.JPanel {
                                 "Confirm Delete",
                                 JOptionPane.YES_NO_OPTION
                             ) == JOptionPane.YES_OPTION) {
-        // 1) cancel the cell‐editor so it never tries to write back
                         if (table.isEditing()) {
                             table.getCellEditor().cancelCellEditing();
                             }
-        // 2) now safe to delete & refresh
                             deleteReport(frid);
                         }
                         break;
@@ -164,10 +162,8 @@ public class Form_FM_Report extends javax.swing.JPanel {
         
     private void deleteReport(String frid) {
         try {
-            // 1) delete detail file
             new File("financial_report_" + frid + ".txt").delete();
 
-            // 2) rewrite list file without this line
             File  listFile = new File("financial_report_list.txt");
             List<String> lines = Files.readAllLines(listFile.toPath());
 
@@ -179,7 +175,7 @@ public class Form_FM_Report extends javax.swing.JPanel {
                 }
             }
 
-            // 3) refresh table
+            // Rrefresh table
             loadFinancialReports();
             refreshTable();
         } catch (IOException ex) {
@@ -217,7 +213,7 @@ public class Form_FM_Report extends javax.swing.JPanel {
         } catch (IOException ign) { /* first run: file might not exist */ }
 
         String frid = String.format("FR%03d", next);    
-        // --- 1) validate & parse dates ---
+        // Validate and Parse Dates
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date startDate, endDate;
         try {
@@ -238,19 +234,17 @@ public class Form_FM_Report extends javax.swing.JPanel {
             return;
         }
 
-        // --- 2) load & filter sales ---
+        // Load and Filter Sales ---
         List<DailySaleEntry> sales = new ArrayList<>();
         double totalRevenue = 0;
         try (BufferedReader br = new BufferedReader(new FileReader("daily_sales.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                // skip blank lines
                 if (line.isEmpty()) {
                     continue;
                 }
                 String[] parts = line.split("\\|");
-                // must have at least date | items | amount
                 if (parts.length < 3) {
                     continue;
                 }
@@ -258,15 +252,13 @@ public class Form_FM_Report extends javax.swing.JPanel {
                 try {
                     d = sdf.parse(parts[0]);
                 } catch (ParseException pe) {
-                    // couldn’t parse this date → skip this line
                     continue;
                 }
-                // filter by your date range
+                // Filter Data by Date
                 if (d.before(startDate) || d.after(endDate)) {
                     continue;
                 }
             
-                // parse total-for-that-day
                 double recordAmount;
                 try {
                     recordAmount = Double.parseDouble(parts[2]);
@@ -275,7 +267,6 @@ public class Form_FM_Report extends javax.swing.JPanel {
                 }
                 totalRevenue += recordAmount;
             
-                // parse each item pair "IC004,7;IC006,9;"
                 String[] itemPairs = parts[1].split(";");
                 for (String pair : itemPairs) {
                     if (pair.isBlank()) continue;
@@ -285,7 +276,6 @@ public class Form_FM_Report extends javax.swing.JPanel {
                         int qty = Integer.parseInt(kv[1].trim());
                         sales.add(new DailySaleEntry(d, kv[0].trim(), qty, recordAmount));
                     } catch (NumberFormatException nfe) {
-                        // bad quantity → skip
                     }
                 }
             }
@@ -297,13 +287,12 @@ public class Form_FM_Report extends javax.swing.JPanel {
             return;
         }
 
-        // --- 3) load & filter POs ---
+        // Load and Filter POs
         List<POEntry> pos = new ArrayList<>();
         double totalExpenditure = 0;
         try (BufferedReader br = new BufferedReader(new FileReader("processed_po.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // format: PO001|1746633600000|PM001|Processed|IC005:2,IC011:4|21.20
                 String[] p = line.split("\\|");
                 String poId = p[0], prId = p[2];
                 Date d = new Date(Long.parseLong(p[1]));
@@ -377,8 +366,8 @@ public class Form_FM_Report extends javax.swing.JPanel {
             JOptionPane.ERROR_MESSAGE);
         }
 
-        // --- 5) refresh the main table of reports ---
-        loadFinancialReports();    // now reads from financial_report_list.txt
+        // Refresh Report Table 
+        loadFinancialReports();
         refreshTable();
 
         // --- 6) pop up the detail panel ---
@@ -400,13 +389,10 @@ public class Form_FM_Report extends javax.swing.JPanel {
         String[] rec = financialReports.get(row);
         String frid = rec[0];
 
-        // Build the path to that report’s detail file:
         String detailFile = "financial_report_" + frid + ".txt";
-
-        // Try to load it; if missing, fall back to summary
+        
         java.io.File f = new java.io.File(detailFile);
         if (!f.exists()) {
-            // fallback: your old summary dialog
             JOptionPane.showMessageDialog(this,
                 "FRID: " + frid + "\n"
             + "Date Generated: " + rec[1] + "\n"
@@ -416,7 +402,6 @@ public class Form_FM_Report extends javax.swing.JPanel {
             return;
         }
 
-        // Otherwise, parse that file
         List<DailySaleEntry> sales = new ArrayList<>();
         List<POEntry>         pos   = new ArrayList<>();
         Date startDate = null, endDate = null;
@@ -424,17 +409,14 @@ public class Form_FM_Report extends javax.swing.JPanel {
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            // First lines: FRID and Date Range
-            br.readLine(); // "FRID: FRxxx"
+            br.readLine();
             String range = br.readLine().substring("Date Range: ".length());
             String[] dates = range.split(" to ");
             startDate = sdf.parse(dates[0].trim());
             endDate   = sdf.parse(dates[1].trim());
 
-            // skip blank
             br.readLine();
 
-            // next line "Revenue:" then read until "Total Revenue:"
             br.readLine(); // "Revenue:"
             while (!(line = br.readLine()).startsWith("Total Revenue:")) {
                 String[] p = line.split("\\|");
@@ -444,7 +426,6 @@ public class Form_FM_Report extends javax.swing.JPanel {
             }
             totalRev = Double.parseDouble(line.substring("Total Revenue: ".length()));
 
-            // blank
             br.readLine();
 
             // "Expenditure:"
@@ -452,8 +433,8 @@ public class Form_FM_Report extends javax.swing.JPanel {
             while (!(line = br.readLine()).startsWith("Total Expenditure:")) {
                 String[] p = line.split("\\|");
                 pos.add(new POEntry(
-                p[0],          // PO ID
-                null,          // PR ID isn’t in your dump; if you included it adjust index
+                p[0],
+                null,         
                 sdf.parse(p[1]),
                 p[2],
                 Integer.parseInt(p[3]),
@@ -462,7 +443,7 @@ public class Form_FM_Report extends javax.swing.JPanel {
             }
             totalExp = Double.parseDouble(line.substring("Total Expenditure: ".length()));
 
-            // finally read Profit if you need
+            // Read Profit
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
             "Error reading " + detailFile + ":\n" + ex.getMessage(),
@@ -471,7 +452,6 @@ public class Form_FM_Report extends javax.swing.JPanel {
             return;
         }
 
-        // Now you have startDate,endDate,sales,pos,totalRev,totalExp
         FM_FREditorPanel editor = new FM_FREditorPanel(
             frid, startDate, endDate, sales, pos, totalRev, totalExp
         );

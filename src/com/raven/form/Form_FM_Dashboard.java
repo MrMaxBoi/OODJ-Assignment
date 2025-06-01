@@ -1,11 +1,6 @@
 package com.raven.form;
 
-import com.raven.model.Model_Card;
-import com.raven.model.StatusType;
-import com.raven.swing.ScrollBar;
 import com.raven.component.FM_Card_Profit;
-
-import javax.swing.ImageIcon;
 import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Font;
@@ -48,16 +43,12 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         double expenditure = getTodayExpenditure();
         double profit      = revenue - expenditure;
 
-        // 1) Set the card’s title to “Today Profit”
         cardProfit.setTitle("Today Profit");
 
-        // 2) Display profit in the lbValues label:
         cardProfit.setValue(String.format("%.2f", profit));
 
-        // 3) Fill the JTextField “Revenue_TextField” via setter:
         cardProfit.setRevenueText(String.format("%.2f", revenue));
 
-        // 4) Fill the JTextField “Expenditure_TextField” via setter:
         cardProfit.setExpenditureText(String.format("%.2f", expenditure));
     }
  
@@ -75,7 +66,7 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
                     } catch (NumberFormatException ex) {
                         ex.printStackTrace();
                     }
-                    break;  // stop once we find today's entry
+                    break;
                 }
             }
         } catch (IOException e) {
@@ -84,7 +75,6 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         return totalRevenue;
     }
 
-    // (B) Read today's total expenditure from processed_po.txt
     private double getTodayExpenditure() {
         double totalExpenditure = 0.0;
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
@@ -92,14 +82,13 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         try (BufferedReader reader = new BufferedReader(new FileReader("processed_po.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                // Format: PO001|1746633600000|PM001|Processed|IC005:2,IC011:4|21.20
                 String[] parts = line.split("\\|");
                 if (parts.length >= 6) {
                     long timestamp;
                     try {
                         timestamp = Long.parseLong(parts[1]);
                     } catch (NumberFormatException nfe) {
-                        continue; // skip bad line
+                        continue;
                     }
                     String recordDate = new SimpleDateFormat("yyyy-MM-dd")
                                             .format(new Date(timestamp));
@@ -107,7 +96,6 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
                         try {
                             totalExpenditure += Double.parseDouble(parts[5]);
                         } catch (NumberFormatException nfe) {
-                            // skip malformed number
                         }
                     }
                 }
@@ -129,7 +117,7 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
     
     private void loadPOTable() {
         DefaultTableModel model = (DefaultTableModel) PO_Table_List.getModel();
-        model.setRowCount(0);  // Clear table
+        model.setRowCount(0);
 
         int pendingCount = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader("purchase_orders.txt"))) {
@@ -168,7 +156,6 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         }
 
         Item_Update_log.setText(logContent.toString());
-        // scroll to bottom
         Item_Update_log.setCaretPosition(
             Item_Update_log.getDocument().getLength()
         );
