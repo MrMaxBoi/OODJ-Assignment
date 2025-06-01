@@ -17,9 +17,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.table.DefaultTableModel;
 
 public class Form_FM_Dashboard extends javax.swing.JPanel {
 
+    private Timer profitRefreshTimer;
+    private Timer POTableRefreshTimer;
     private Timer logRefreshTimer;
     private FM_Card_Profit cardProfit;
     
@@ -32,37 +35,126 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         Item_Update_log.setWrapStyleWord(true);
         Item_Update_log.setBackground(new Color(250, 250, 250));
         Item_Update_log.setForeground(new Color(60, 60, 60));
-        cardProfit = new FM_Card_Profit();
-        updateCardData();
+        cardProfit = FM_Card_Profit;
+        loadPOTable();
+        POTableAutoRefresh();
         loadItemUpdateLog();
         LogAutoRefresh();
+        FM_CardProfitAutoRefresh();
     }
     
-    private void updateCardData() {
-        // Count items from items.txt
-        int PurchaseOrderCount = countLines("purchase_orders.txt");
-        
-        // Count suppliers from suppliers.txt
-        int TotalSalesCount = countLines("suppliers.txt");
-        
-        // Get today's sales data
-        Map<String, Object> todaySales = getTodaySales();
-        int itemsSoldToday = (int) todaySales.get("itemCount");
-        double totalSalesToday = (double) todaySales.get("totalAmount");
-        
-        // Update cards with real data
-        cardProfit.setTitle("Remaining Purchase Order waiting for Approved or Reject");
-        cardProfit.setValue("There are total " + PurchaseOrderCount + " items.");
-        cardProfit.setRevenue(""); 
-        
-        card2.setData(new Model_Card(
-            new ImageIcon(getClass().getResource("/com/raven/icon/FM_Report.png")), 
-            "Total Sales Monthly", 
-            "There are total " + TotalSalesCount + " suppliers.", 
-            ""
-        ));
+    private void updateProfitCard() {
+        double revenue     = getTodayRevenue();
+        double expenditure = getTodayExpenditure();
+        double profit      = revenue - expenditure;
+
+        // 1) Set the card’s title to “Today Profit”
+        cardProfit.setTitle("Today Profit");
+
+        // 2) Display profit in the lbValues label:
+        cardProfit.setValue(String.format("%.2f", profit));
+
+        // 3) Fill the JTextField “Revenue_TextField” via setter:
+        cardProfit.setRevenueText(String.format("%.2f", revenue));
+
+        // 4) Fill the JTextField “Expenditure_TextField” via setter:
+        cardProfit.setExpenditureText(String.format("%.2f", expenditure));
     }
  
+    private double getTodayRevenue() {
+        double totalRevenue = 0.0;
+        String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("daily_sales.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 3 && parts[0].equals(today)) {
+                    try {
+                        totalRevenue = Double.parseDouble(parts[2]);
+                    } catch (NumberFormatException ex) {
+                        ex.printStackTrace();
+                    }
+                    break;  // stop once we find today's entry
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return totalRevenue;
+    }
+
+    // (B) Read today's total expenditure from processed_po.txt
+    private double getTodayExpenditure() {
+        double totalExpenditure = 0.0;
+        String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("processed_po.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Format: PO001|1746633600000|PM001|Processed|IC005:2,IC011:4|21.20
+                String[] parts = line.split("\\|");
+                if (parts.length >= 6) {
+                    long timestamp;
+                    try {
+                        timestamp = Long.parseLong(parts[1]);
+                    } catch (NumberFormatException nfe) {
+                        continue; // skip bad line
+                    }
+                    String recordDate = new SimpleDateFormat("yyyy-MM-dd")
+                                            .format(new Date(timestamp));
+                    if (today.equals(recordDate)) {
+                        try {
+                            totalExpenditure += Double.parseDouble(parts[5]);
+                        } catch (NumberFormatException nfe) {
+                            // skip malformed number
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return totalExpenditure;
+    }
+    
+    private void FM_CardProfitAutoRefresh() {
+        if (profitRefreshTimer != null && profitRefreshTimer.isRunning()) {
+            profitRefreshTimer.stop();
+        }
+        profitRefreshTimer = new Timer(1000, e -> updateProfitCard());
+        profitRefreshTimer.setInitialDelay(0);
+        profitRefreshTimer.start();
+    }
+    
+    private void loadPOTable() {
+        DefaultTableModel model = (DefaultTableModel) PO_Table_List.getModel();
+        model.setRowCount(0);  // Clear table
+
+        int pendingCount = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader("purchase_orders.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 4) {
+                    String poid = parts[0];
+                    long timestamp = Long.parseLong(parts[1]);
+                    String status = parts[3];
+
+                    if ("Pending".equalsIgnoreCase(status.trim())) {
+                        String dateRequired = new SimpleDateFormat("yyyy-MM-dd").format(new Date(timestamp));
+                        model.addRow(new Object[]{poid, dateRequired, status});
+                        pendingCount++;
+                    }
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        Remaining_PO_lb.setText(pendingCount + " Purchase Order Remaining");
+    }
+    
     private void loadItemUpdateLog() {
         StringBuilder logContent = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader("logs.txt"))) {
@@ -87,9 +179,18 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
         if (logRefreshTimer != null && logRefreshTimer.isRunning()) {
             logRefreshTimer.stop();
         }
-        logRefreshTimer = new Timer(3000, e -> loadItemUpdateLog());
+        logRefreshTimer = new Timer(30_000, e -> loadItemUpdateLog());
         logRefreshTimer.setInitialDelay(0);
         logRefreshTimer.start();
+    }
+    
+    private void POTableAutoRefresh() {
+        if (POTableRefreshTimer != null && POTableRefreshTimer.isRunning()) {
+            POTableRefreshTimer.stop();
+        }
+        POTableRefreshTimer = new Timer(15_000, e -> loadPOTable());
+        POTableRefreshTimer.setInitialDelay(0);
+        POTableRefreshTimer.start();
     }
     
     private int countLines(String filename) {
@@ -141,20 +242,35 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
 
         menuBar1 = new java.awt.MenuBar();
         panel = new javax.swing.JLayeredPane();
-        card2 = new com.raven.component.Card();
-        fM_Card_Profit1 = new com.raven.component.FM_Card_Profit();
+        FM_Card_Profit = new com.raven.component.FM_Card_Profit();
         jScrollPane1 = new javax.swing.JScrollPane();
         Item_Update_log = new javax.swing.JTextArea();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        PO_Table_List = new javax.swing.JTable();
+        Remaining_PO_lb = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
         panel.setLayout(new java.awt.GridLayout(1, 0, 10, 0));
 
-        card2.setColor1(new java.awt.Color(186, 123, 247));
-        card2.setColor2(new java.awt.Color(167, 94, 236));
-
         Item_Update_log.setColumns(20);
         Item_Update_log.setRows(5);
+        jScrollPane1.setViewportView(Item_Update_log);
+
+        PO_Table_List.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "POID", "Date Required", "Status"
+            }
+        ));
+        jScrollPane2.setViewportView(PO_Table_List);
+
+        Remaining_PO_lb.setText("jLabel1");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -164,17 +280,18 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(card2, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE))
+                        .addComponent(panel)
                         .addGap(20, 20, 20))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 425, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(fM_Card_Profit1, javax.swing.GroupLayout.PREFERRED_SIZE, 875, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(FM_Card_Profit, javax.swing.GroupLayout.PREFERRED_SIZE, 875, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                                    .addComponent(Remaining_PO_lb, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 417, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(14, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -182,21 +299,26 @@ public class Form_FM_Dashboard extends javax.swing.JPanel {
                 .addGap(20, 20, 20)
                 .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fM_Card_Profit1, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                .addComponent(FM_Card_Profit, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(card2, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Remaining_PO_lb, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGap(23, 23, 23))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.raven.component.FM_Card_Profit FM_Card_Profit;
     private javax.swing.JTextArea Item_Update_log;
-    private com.raven.component.Card card2;
-    private com.raven.component.FM_Card_Profit fM_Card_Profit1;
+    private javax.swing.JTable PO_Table_List;
+    private javax.swing.JLabel Remaining_PO_lb;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private java.awt.MenuBar menuBar1;
     private javax.swing.JLayeredPane panel;
     // End of variables declaration//GEN-END:variables
