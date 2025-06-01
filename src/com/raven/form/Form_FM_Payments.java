@@ -5,11 +5,7 @@ import com.raven.cell.TableActionCellRender;
 import com.raven.cell.TableActionEvent;
 import com.raven.data.POItem;
 import com.raven.data.PurchaseOrder;
-import com.raven.data.PurchaseRequisition;
-import com.raven.data.PurchaseRequisitionRepository;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,21 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class Form_FM_Payments extends javax.swing.JPanel {
+    
     private List<PurchaseOrder> pos = new ArrayList<>();
-    private boolean hasUnsavedChanges = false;
     private String currentUserId;
     
     public Form_FM_Payments(String userId) {
@@ -78,7 +67,6 @@ public class Form_FM_Payments extends javax.swing.JPanel {
                     String raisedBy = parts[2];
                     String status = parts[3];
                     
-                    // Parse items (format: IC004:6,IC006:6)
                     List<POItem> items = new ArrayList<>();
                     if (!parts[4].isEmpty()) {
                         for (String itemPair : parts[4].split(",")) {
@@ -99,7 +87,6 @@ public class Form_FM_Payments extends javax.swing.JPanel {
     private void savePOs() throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("purchase_orders.txt"))) {
             for (PurchaseOrder po : pos) {
-                // Format: PO001|1620000000000|PM001|Pending|IC001:50,IC002:30
                 String itemsString = po.getItems().stream()
                     .map(item -> item.getItemCode() + ":" + item.getQuantity())
                     .collect(Collectors.joining(","));
@@ -125,7 +112,7 @@ public class Form_FM_Payments extends javax.swing.JPanel {
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6; // Only action column is editable
+                return column == 6;
             }
         };
         
@@ -184,18 +171,17 @@ public class Form_FM_Payments extends javax.swing.JPanel {
     }
 
     private void saveProcessedPOs() throws IOException {
-        Map<String, Double> itemPrices = loadItemPrices();  // Load prices from items.txt
+        Map<String, Double> itemPrices = loadItemPrices();
         File file = new File("processed_po.txt");
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             for (PurchaseOrder po : pos) {
                 if ("Processed".equals(po.getStatus())) {
-                    // Build item list string
                     String itemsString = po.getItems().stream()
                         .map(item -> item.getItemCode() + ":" + item.getQuantity())
                         .collect(Collectors.joining(","));
 
-                    // Calculate total amount
+                    // Calculate Total Amount
                     double totalAmount = 0.0;
                     for (POItem item : po.getItems()) {
                         Double price = itemPrices.get(item.getItemCode());
@@ -204,7 +190,7 @@ public class Form_FM_Payments extends javax.swing.JPanel {
                         }
                     }
 
-                    // Save full PO data with amount
+                    // Save PO Data
                     String line = String.join("|",
                         po.getPoId(),
                         String.valueOf(po.getDateRequired().getTime()),
@@ -256,7 +242,7 @@ public class Form_FM_Payments extends javax.swing.JPanel {
                     po.getRaisedBy(),
                     po.getStatus(),
                     String.format("RM %.2f", totalAmount),
-                    "" // Action column
+                    ""
                 });
             }
         }
@@ -271,7 +257,6 @@ public class Form_FM_Payments extends javax.swing.JPanel {
         dialog.setModal(true);
         dialog.setLayout(new BorderLayout());
         
-        // Create view panel (read-only)
         PM_POEditorPanel viewPanel = new PM_POEditorPanel(po, new ArrayList<>());
         viewPanel.setEditable(false);
         dialog.add(viewPanel, BorderLayout.CENTER);
@@ -312,7 +297,6 @@ public class Form_FM_Payments extends javax.swing.JPanel {
         
         if (confirm == JOptionPane.YES_OPTION) {
             po.setStatus("Processed");
-            hasUnsavedChanges = true;
             refreshTable();
         }
     }
@@ -407,7 +391,6 @@ public class Form_FM_Payments extends javax.swing.JPanel {
     try {
         savePOs();               // Save all POs (current function)
         saveProcessedPOs();      // Save only Processed ones to "processed_po.txt"
-        hasUnsavedChanges = false;
 
         JOptionPane.showMessageDialog(this, "POs saved successfully!", 
             "Success", JOptionPane.INFORMATION_MESSAGE);

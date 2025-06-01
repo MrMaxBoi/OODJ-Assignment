@@ -8,8 +8,6 @@ import com.raven.data.PurchaseOrder;
 import com.raven.data.PurchaseRequisition;
 import com.raven.data.PurchaseRequisitionRepository;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,21 +17,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 
@@ -109,7 +97,6 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
     private void savePOs() throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("purchase_orders.txt"))) {
             for (PurchaseOrder po : pos) {
-                // Format: PO001|1620000000000|PM001|Pending|IC001:50,IC002:30
                 String itemsString = po.getItems().stream()
                     .map(item -> item.getItemCode() + ":" + item.getQuantity())
                     .collect(Collectors.joining(","));
@@ -183,20 +170,23 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
     private void refreshTable() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
-        
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        
+
         for (PurchaseOrder po : pos) {
-            model.addRow(new Object[]{
-                po.getPoId(),
-                dateFormat.format(po.getDateRequired()),
-                po.getItems().size(),
-                po.getRaisedBy(),
-                po.getStatus(),
-                "" // Action column
-            });
+            if (!"Processed".equalsIgnoreCase(po.getStatus().trim())) {
+                model.addRow(new Object[]{
+                    po.getPoId(),
+                    dateFormat.format(po.getDateRequired()),
+                    po.getItems().size(),
+                    po.getRaisedBy(),
+                    po.getStatus(),
+                    ""
+                });
+            }
         }
     }
+
     
 
     private void showEditDialog(int row) {
@@ -213,8 +203,6 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
             dialog.setTitle("Edit Purchase Order - " + po.getPoId());
             dialog.setModal(true);
             dialog.setLayout(new BorderLayout());
-            
-            // Create editor panel
             PM_POEditorPanel editorPanel = new PM_POEditorPanel(po, approvedPRs);
             dialog.add(editorPanel, BorderLayout.CENTER);
             
@@ -264,7 +252,6 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
             dialog.setModal(true);
             dialog.setLayout(new BorderLayout());
             
-            // Create empty PO
             List<POItem> items = new ArrayList<>();
             PurchaseOrder newPO = new PurchaseOrder(
                 generateNextPOId(),
@@ -274,7 +261,6 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
                 items
             );
             
-            // Create editor panel
             PM_POEditorPanel editorPanel = new PM_POEditorPanel(newPO, approvedPRs);
             dialog.add(editorPanel, BorderLayout.CENTER);
             
@@ -314,7 +300,6 @@ public class Form_ADMIN_PurchaseOrder extends javax.swing.JPanel {
         dialog.setModal(true);
         dialog.setLayout(new BorderLayout());
         
-        // Create view panel (read-only)
         PM_POEditorPanel viewPanel = new PM_POEditorPanel(po, new ArrayList<>());
         viewPanel.setEditable(false);
         dialog.add(viewPanel, BorderLayout.CENTER);
