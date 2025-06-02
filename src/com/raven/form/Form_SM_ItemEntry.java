@@ -42,23 +42,39 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
     public boolean hasUnsavedChanges = false;
     private Map<String, String> supplierMap; // Maps display text to supplier code
     
-    private class Item {
-        String code;
-        String name;
-        String supplier;
-        String unitPrice;
-        
-        public Item(String code, String name, String supplier, String unitPrice) {
-            this.code = code;
-            this.name = name;
-            this.supplier = supplier;
-            this.unitPrice = unitPrice;
-        }
-        
-        public String toFileString() {
-            return String.join(",", code, name, supplier, unitPrice);
-        }
+private class Item {
+    String code;
+    String name;
+    String supplier;
+    String unitPrice;
+    String currentStock;  // Added as String to preserve original format
+    String maxStock;
+    String lowStockLevel;
+    
+    public Item(String code, String name, String supplier, String unitPrice, 
+               String currentStock, String maxStock, String lowStockLevel) {
+        this.code = code;
+        this.name = name;
+        this.supplier = supplier;
+        this.unitPrice = unitPrice;
+        this.currentStock = currentStock;
+        this.maxStock = maxStock;
+        this.lowStockLevel = lowStockLevel;
     }
+    
+    // Modified toFileString to include all fields
+    public String toFileString() {
+        return String.join(",", 
+            code, 
+            name, 
+            supplier, 
+            unitPrice,
+            currentStock != null ? currentStock : "0",
+            maxStock != null ? maxStock : "100",
+            lowStockLevel != null ? lowStockLevel : "10"
+        );
+    }
+}
     
     public Form_SM_ItemEntry() {
         initComponents();
@@ -151,92 +167,92 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
     }
     
     private void loadItemsFromFile() {
-        items.clear();
-        File file = new File(FILE_NAME);
-        if (!file.exists()) {
-            JOptionPane.showMessageDialog(this, "Items file not found at: " + file.getAbsolutePath(), 
-                "File Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    items.clear();
+    File file = new File(FILE_NAME);
+    if (!file.exists()) {
+        JOptionPane.showMessageDialog(this, "Items file not found at: " + file.getAbsolutePath(), 
+            "File Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            int lineNumber = 0;
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                // Skip empty lines
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-
-                String[] parts = line.split(",");
-                // Debug: Log the line being processed
-                System.out.println("Line " + lineNumber + ": " + line);
-
-                // Handle lines with at least 4 fields
-                if (parts.length >= 4) {
-                    try {
-                        // Validate fields
-                        String code = parts[0].trim();
-                        String name = parts[1].trim();
-                        String supplier = parts[2].trim();
-                        String unitPrice = parts[3].trim();
-
-                        // Check if supplier exists in supplierMap
-                        if (supplierMap.containsValue(supplier)) {
-                            items.add(new Item(code, name, supplier, unitPrice));
-                        } else {
-                            System.out.println("Skipping item at line " + lineNumber + ": Invalid supplier code " + supplier);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Error parsing line " + lineNumber + ": " + e.getMessage());
-                    }
-                } else {
-                    System.out.println("Skipping line " + lineNumber + ": Expected at least 4 fields, found " + parts.length);
-                }
+    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        String line;
+        int lineNumber = 0;
+        while ((line = reader.readLine()) != null) {
+            lineNumber++;
+            if (line.trim().isEmpty()) {
+                continue;
             }
 
-            // Sort items by code
-            items.sort((a, b) -> {
+            String[] parts = line.split(",");
+            System.out.println("Line " + lineNumber + ": " + line);
+
+            if (parts.length >= 4) {
                 try {
-                    int numA = Integer.parseInt(a.code.substring(2));
-                    int numB = Integer.parseInt(b.code.substring(2));
-                    return Integer.compare(numA, numB);
-                } catch (NumberFormatException e) {
-                    return 0;
+                    String code = parts[0].trim();
+                    String name = parts[1].trim();
+                    String supplier = parts[2].trim();
+                    String unitPrice = parts[3].trim();
+                    
+                    // Handle different formats
+                    String currentStock = parts.length > 4 ? parts[4].trim() : "0";
+                    String maxStock = parts.length > 5 ? parts[5].trim() : "100";
+                    String lowStockLevel = parts.length > 6 ? parts[6].trim() : "10";
+
+                    if (supplierMap.containsValue(supplier)) {
+                        items.add(new Item(code, name, supplier, unitPrice, 
+                                         currentStock, maxStock, lowStockLevel));
+                    } else {
+                        System.out.println("Skipping item at line " + lineNumber + 
+                                         ": Invalid supplier code " + supplier);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error parsing line " + lineNumber + ": " + e.getMessage());
                 }
-            });
-
-            // Debug: Log number of items loaded
-            System.out.println("Loaded " + items.size() + " items from " + FILE_NAME);
-
-            // Force table refresh
-            refreshTable();
-
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error loading items: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                System.out.println("Skipping line " + lineNumber + 
+                                 ": Expected at least 4 fields, found " + parts.length);
+            }
         }
+
+        // Sort items by code
+        items.sort((a, b) -> {
+            try {
+                int numA = Integer.parseInt(a.code.substring(2));
+                int numB = Integer.parseInt(b.code.substring(2));
+                return Integer.compare(numA, numB);
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        });
+
+        System.out.println("Loaded " + items.size() + " items from " + FILE_NAME);
+        refreshTable();
+
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(this, "Error loading items: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
     
     public boolean saveItemsToFile(boolean silent) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
-            for (Item item : items) {
-                writer.write(item.toFileString());
-                writer.newLine();
-            }
-            hasUnsavedChanges = false;
-            if (!silent) {
-                JOptionPane.showMessageDialog(this, "Items saved successfully!", 
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
-            }
-            return true;
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error saving items: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+        for (Item item : items) {
+            writer.write(item.toFileString());
+            writer.newLine();
         }
+        hasUnsavedChanges = false;
+        if (!silent) {
+            JOptionPane.showMessageDialog(this, "Items saved successfully!", 
+                "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return true;
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(this, "Error saving items: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
+        return false;
     }
+}
     
     private void saveItemsToFile() {
         saveItemsToFile(false);
@@ -336,7 +352,7 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
                 }
             }
 
-            // Update item
+            // Update only the editable fields (first 4), preserve the stock fields
             finalItem.code = codeField.getText().trim();
             finalItem.name = nameField.getText().trim();
             finalItem.supplier = newSupplierCode;
@@ -457,12 +473,15 @@ public class Form_SM_ItemEntry extends javax.swing.JPanel {
         String supplierCode = supplierMap.get(selectedDisplay);
 
         try {
-            // Add new item
+            // Add new item with default stock values
             Item newItem = new Item(
                 codeField.getText().trim(),
                 nameField.getText().trim(),
                 supplierCode,
-                priceField.getText().trim()
+                priceField.getText().trim(),
+                "0",    // Default current stock
+                "100",  // Default max stock
+                "10"    // Default low stock level
             );
 
             // Update supplier's items list
