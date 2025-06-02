@@ -7,6 +7,7 @@ package com.raven.form;
 import com.raven.cell.TableActionCellEditor;
 import com.raven.cell.TableActionCellRender;
 import com.raven.cell.TableActionEvent;
+import com.raven.data.ItemManager;
 import com.raven.data.PurchaseRequisition;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -21,6 +22,7 @@ public class PM_PREditorPanel extends JPanel {
     private final PurchaseRequisition pr;
     private DefaultTableModel itemsModel;
     private JSpinner dateSpinner; // Using JSpinner as alternative to JXDatePicker
+    private JTable itemsTable;
     // OR if using JXDatePicker:
     // private JXDatePicker datePicker;
     
@@ -66,7 +68,7 @@ public class PM_PREditorPanel extends JPanel {
             new Object[]{"Item Code", "Item Name", "Quantity"}, 0) {
         };
         
-        JTable itemsTable = new JTable(itemsModel);
+        itemsTable = new JTable(itemsModel);
         itemsTable.setRowHeight(30);
         
         add(infoPanel, BorderLayout.NORTH);
@@ -74,18 +76,25 @@ public class PM_PREditorPanel extends JPanel {
     }
     
     private void loadItems() {
-        itemsModel.setRowCount(0);
-        for (Map.Entry<String, Integer> entry : pr.getItems().entrySet()) {
-            // In a real implementation, you would look up the item name from your items database
-            String itemName = "Item " + entry.getKey(); // Placeholder - replace with actual lookup
-            itemsModel.addRow(new Object[]{
-                entry.getKey(),
-                itemName,
-                entry.getValue(),
-                "Remove"
-            });
-        }
+    itemsModel.setRowCount(0);
+    for (Map.Entry<String, Integer> entry : pr.getItems().entrySet()) {
+        String itemName = ItemManager.getItemName(entry.getKey());
+        itemsModel.addRow(new Object[]{
+            entry.getKey(),
+            itemName,
+            entry.getValue()
+        });
     }
+}
+    public void setEditable(boolean editable) {
+    dateSpinner.setEnabled(editable); // or datePicker.setEnabled(editable) if used
+    
+    // Make the table cells editable or not
+    itemsTable.setEnabled(editable);
+    
+    // Optional: visually gray it out when not editable
+    itemsTable.setBackground(editable ? Color.WHITE : UIManager.getColor("Panel.background"));
+}
     
     public void updatePR() {
     // Update the date

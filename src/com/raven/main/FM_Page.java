@@ -6,13 +6,12 @@
 package com.raven.main;
 
 import com.raven.component.Header;
-import com.raven.form.Form_SM_ItemEntry;
+import com.raven.form.Form_FM_Dashboard;
 import com.raven.event.EventMenuSelected;
-import com.raven.form.Form_SM_SupplierManagement;
-import com.raven.form.Form_SM_DailySalesEntry;
-import com.raven.form.Form_SM_Dashboard;
-import com.raven.form.Form_SM_PurchaseOrderList;
-import com.raven.form.Form_SM_PurchaseRequisition;
+import com.raven.form.Form_FM_PurchaseOrder;
+import com.raven.form.Form_FM_PurchaseRequisition;
+import com.raven.form.Form_FM_Payments;
+import com.raven.form.Form_FM_Report;
 import java.awt.Color;
 import java.awt.Component;
 import static java.awt.SystemColor.menu;
@@ -29,25 +28,22 @@ public class FM_Page extends javax.swing.JFrame {
      * Creates new form Main
      */
     
-    private Form_SM_Dashboard home;
-    private Form_SM_ItemEntry form1;
-    private Form_SM_SupplierManagement form2;
-    private Form_SM_DailySalesEntry form3;
-    private Form_SM_PurchaseRequisition form4;
-    private Form_SM_PurchaseOrderList form5;
-    private Form_SM_PurchaseOrderList form6;
+    private Form_FM_Dashboard home;
+    private Form_FM_PurchaseRequisition form1;
+    private Form_FM_PurchaseOrder form2;
+    private Form_FM_Payments form3;
+    private Form_FM_Report form4;
     private String currentUserId;
     
     public FM_Page(String userId) {
         this.currentUserId = userId;
         initComponents();
         setBackground(new Color(0, 0, 0, 0));
-        home = new Form_SM_Dashboard();
-        form1 = new Form_SM_ItemEntry();
-        form2 = new Form_SM_SupplierManagement();
-        form3 = new Form_SM_DailySalesEntry();
-        form4 = new Form_SM_PurchaseRequisition(currentUserId);
-        form5 = new Form_SM_PurchaseOrderList();
+        home = new Form_FM_Dashboard();
+        form1 = new Form_FM_PurchaseRequisition();
+        form2 = new Form_FM_PurchaseOrder(userId);
+        form3 = new Form_FM_Payments(userId);
+        form4 = new Form_FM_Report();
         menu.initMoving(FM_Page.this);
         menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
@@ -62,15 +58,13 @@ public class FM_Page extends javax.swing.JFrame {
                     setForm(form3);
                 } else if (index == 4) {
                     setForm(form4);
-                } else if (index == 5) {
-                    setForm(form5);
                 } else if (index == 15) {
                     logout();
                 }
             }
         });
         
-        setForm(new Form_SM_Dashboard());
+        setForm(new Form_FM_Dashboard());
     }
     
     public FM_Page() {
@@ -79,35 +73,8 @@ public class FM_Page extends javax.swing.JFrame {
     
 private void logout() {
     // Check for unsaved changes in both forms
-    boolean hasUnsavedItemChanges = form1 != null && form1.hasUnsavedChanges;
     boolean hasUnsavedSupplierChanges = form2 != null && form2.hasUnsavedChanges;
     
-    if (hasUnsavedItemChanges || hasUnsavedSupplierChanges) {
-        StringBuilder message = new StringBuilder("You have unsaved changes in:");
-        if (hasUnsavedItemChanges) message.append("\n- Item Management");
-        if (hasUnsavedSupplierChanges) message.append("\n- Supplier Management");
-        message.append("\n\nDo you want to save before logging out?");
-        
-        int saveOption = JOptionPane.showConfirmDialog(
-            this,
-            message.toString(),
-            "Unsaved Changes",
-            JOptionPane.YES_NO_CANCEL_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-
-        if (saveOption == JOptionPane.YES_OPTION) {
-            // Save both forms silently during logout
-            boolean itemSaved = form1 != null && form1.hasUnsavedChanges ? form1.saveItemsToFile(true) : true;
-            boolean supplierSaved = form2 != null && form2.hasUnsavedChanges ? form2.saveSuppliersToFile(true) : true;
-            
-            if (!itemSaved || !supplierSaved) {
-                return; // Don't proceed with logout if any save failed
-            }
-        } else if (saveOption == JOptionPane.CANCEL_OPTION) {
-            return; // Cancel logout
-        }
-        // If NO, continue with logout without saving
-    }
 
     // Only show logout confirmation if we didn't just handle unsaved changes
     int confirm = JOptionPane.showConfirmDialog(
@@ -126,34 +93,23 @@ private void logout() {
 }
 
 private void setForm(JComponent com) {
-    // Check for unsaved changes in the current form before switching
+    // Check for unsaved changes only if current form is Form_FM_PurchaseOrder
     if (mainPanel.getComponentCount() > 0) {
         Component current = mainPanel.getComponent(0);
-        
-        if (current instanceof Form_SM_ItemEntry) {
-            Form_SM_ItemEntry currentForm = (Form_SM_ItemEntry)current;
-            if (!currentForm.checkUnsavedChanges()) {
-                return; // Abort the form switch if user cancels
-            }
-        } else if (current instanceof Form_SM_SupplierManagement) {
-            Form_SM_SupplierManagement currentForm = (Form_SM_SupplierManagement)current;
-            if (!currentForm.checkUnsavedChanges()) {
+
+        if (current instanceof Form_FM_PurchaseOrder) {
+            Form_FM_PurchaseOrder currentForm = (Form_FM_PurchaseOrder) current;
+            if (currentForm.checkUnsavedChanges()) {
                 return; // Abort the form switch if user cancels
             }
         }
     }
-    
+
     mainPanel.removeAll();
     mainPanel.add(com);
     mainPanel.repaint();
     mainPanel.revalidate();
-   
 }
-    
-    
-
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.

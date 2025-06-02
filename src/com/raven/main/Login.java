@@ -221,6 +221,12 @@ private void setupImageScaling() {
                 dashboard.setVisible(true);
                 this.dispose();
             }
+            else if (role.equalsIgnoreCase("Adminstrator")) {
+                ADMIN_Page dashboard = new ADMIN_Page(user.getWorkID());
+                dashboard.getHeader().setUserInfo(user.getName(), user.getRole());
+                dashboard.setVisible(true);
+                this.dispose();
+            }
             
             else
             
