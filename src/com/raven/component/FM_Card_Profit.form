@@ -17,49 +17,44 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lbValues" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lbTitle" min="-2" max="-2" attributes="0"/>
+                  <Component id="lbValues" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                      <Component id="lbRevenue" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="lbExpediture" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="lbTitle" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="Daily_Button" pref="83" max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="Monthly_Button" pref="83" max="32767" attributes="0"/>
-                      <Component id="Yearly_Button" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lbRevenue" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lbExpediture" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="Revenure_TextField" max="32767" attributes="0"/>
+                          <Component id="Expenditure_TextField" min="-2" pref="123" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+              <EmptySpace pref="288" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="18" max="32767" attributes="0"/>
+              <Component id="lbTitle" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="lbValues" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lbTitle" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Daily_Button" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lbValues" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Monthly_Button" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lbExpediture" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lbRevenue" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Yearly_Button" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Revenure_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="49" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="lbExpediture" min="-2" max="-2" attributes="0"/>
+                  <Component id="Expenditure_TextField" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -98,27 +93,6 @@
         <Property name="text" type="java.lang.String" value="Revenue"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="Daily_Button">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Daily"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="Monthly_Button">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Monthly"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Monthly_ButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="Yearly_Button">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Yearly"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Yearly_ButtonActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="lbExpediture">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -129,6 +103,10 @@
         </Property>
         <Property name="text" type="java.lang.String" value="Expenditure"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="Revenure_TextField">
+    </Component>
+    <Component class="javax.swing.JTextField" name="Expenditure_TextField">
     </Component>
   </SubComponents>
 </Form>

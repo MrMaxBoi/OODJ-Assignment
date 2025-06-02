@@ -30,10 +30,10 @@ public class ADMIN_Menu extends javax.swing.JPanel {
         listMenu1.addItem(new Model_Menu("8", "Supplier Management", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("6", "Daily Sales Entry", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("3", "Purchase Requisition", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("2", "Purchase Order List", Model_Menu.MenuType.MENU));
+        listMenu1.addItem(new Model_Menu("2", "Purchase Order", Model_Menu.MenuType.MENU));        
+        listMenu1.addItem(new Model_Menu("Admin_payments", "Payments", Model_Menu.MenuType.MENU));
+        listMenu1.addItem(new Model_Menu("Admin_report", "Report", Model_Menu.MenuType.MENU));
         
-        listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
-        listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));

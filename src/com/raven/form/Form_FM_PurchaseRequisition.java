@@ -81,7 +81,7 @@ public class Form_FM_PurchaseRequisition extends javax.swing.JPanel {
                 pr.getItems().size(),
                 pr.getRaisedBy(),
                 pr.getStatus(),
-                "" // Action column
+                ""
             });
         }
     }

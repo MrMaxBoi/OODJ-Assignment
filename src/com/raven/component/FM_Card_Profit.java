@@ -13,6 +13,12 @@ public class FM_Card_Profit extends javax.swing.JPanel {
     private Color color1 = new Color(58,96,115);
     private Color color2 = new Color(22,34,42);
 
+    public FM_Card_Profit() {
+        initComponents();
+        setOpaque(false);
+        setPreferredSize(new Dimension(250,120));
+    }
+    
     public void setColor1(Color color1) {
         this.color1 = color1;
         repaint();
@@ -30,12 +36,6 @@ public class FM_Card_Profit extends javax.swing.JPanel {
     public void setValue(String value){
         lbValues.setText(value);
     }
-    
-    public FM_Card_Profit() {
-        initComponents();
-        setOpaque(false);
-        setPreferredSize(new Dimension(250,120));
-    }
 
     public void setData(Model_Card data) {
         lbTitle.setText(data.getTitle());
@@ -44,13 +44,29 @@ public class FM_Card_Profit extends javax.swing.JPanel {
     }
 
     public void setRevenue(String revenueText) {
-    lbRevenue.setText(revenueText);
-}
+        lbRevenue.setText(revenueText);
+    }
 
     public void setExpenditure(String expenditureText) {
-    lbExpediture.setText(expenditureText);
-}
+        lbExpediture.setText(expenditureText);
+    }
 
+    public void setRevenueText(String text) {
+        Revenure_TextField.setText(text);
+    }
+
+    public String getRevenueText() {
+        return Revenure_TextField.getText();
+    }
+
+    public void setExpenditureText(String text) {
+        Expenditure_TextField.setText(text);
+    }
+
+    public String getExpenditureText() {
+        return Expenditure_TextField.getText();
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -58,10 +74,9 @@ public class FM_Card_Profit extends javax.swing.JPanel {
         lbTitle = new javax.swing.JLabel();
         lbValues = new javax.swing.JLabel();
         lbRevenue = new javax.swing.JLabel();
-        Daily_Button = new javax.swing.JButton();
-        Monthly_Button = new javax.swing.JButton();
-        Yearly_Button = new javax.swing.JButton();
         lbExpediture = new javax.swing.JLabel();
+        Revenure_TextField = new javax.swing.JTextField();
+        Expenditure_TextField = new javax.swing.JTextField();
 
         lbTitle.setFont(new java.awt.Font("sansserif", 1, 14)); // NOI18N
         lbTitle.setForeground(new java.awt.Color(255, 255, 255));
@@ -75,22 +90,6 @@ public class FM_Card_Profit extends javax.swing.JPanel {
         lbRevenue.setForeground(new java.awt.Color(255, 255, 255));
         lbRevenue.setText("Revenue");
 
-        Daily_Button.setText("Daily");
-
-        Monthly_Button.setText("Monthly");
-        Monthly_Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Monthly_ButtonActionPerformed(evt);
-            }
-        });
-
-        Yearly_Button.setText("Yearly");
-        Yearly_Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Yearly_ButtonActionPerformed(evt);
-            }
-        });
-
         lbExpediture.setFont(new java.awt.Font("sansserif", 0, 14)); // NOI18N
         lbExpediture.setForeground(new java.awt.Color(255, 255, 255));
         lbExpediture.setText("Expenditure");
@@ -100,50 +99,38 @@ public class FM_Card_Profit extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(26, 26, 26)
+                .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbTitle)
                     .addComponent(lbValues)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(1, 1, 1)
-                        .addComponent(lbRevenue)
-                        .addGap(18, 18, 18)
-                        .addComponent(lbExpediture))
-                    .addComponent(lbTitle))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(Daily_Button, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(Monthly_Button, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
-                        .addComponent(Yearly_Button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(16, 16, 16))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lbRevenue)
+                            .addComponent(lbExpediture))
+                        .addGap(42, 42, 42)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Revenure_TextField)
+                            .addComponent(Expenditure_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(288, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(32, 32, 32)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addComponent(lbTitle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lbValues)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbTitle)
-                    .addComponent(Daily_Button))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbValues)
-                    .addComponent(Monthly_Button))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbExpediture)
                     .addComponent(lbRevenue)
-                    .addComponent(Yearly_Button))
-                .addContainerGap(49, Short.MAX_VALUE))
+                    .addComponent(Revenure_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbExpediture)
+                    .addComponent(Expenditure_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(15, 15, 15))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void Monthly_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Monthly_ButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Monthly_ButtonActionPerformed
-
-    private void Yearly_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Yearly_ButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Yearly_ButtonActionPerformed
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -159,9 +146,8 @@ public class FM_Card_Profit extends javax.swing.JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Daily_Button;
-    private javax.swing.JButton Monthly_Button;
-    private javax.swing.JButton Yearly_Button;
+    private javax.swing.JTextField Expenditure_TextField;
+    private javax.swing.JTextField Revenure_TextField;
     private javax.swing.JLabel lbExpediture;
     private javax.swing.JLabel lbRevenue;
     private javax.swing.JLabel lbTitle;
