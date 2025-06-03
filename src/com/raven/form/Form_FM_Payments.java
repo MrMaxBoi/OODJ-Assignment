@@ -28,6 +28,7 @@ import javax.swing.table.DefaultTableModel;
 public class Form_FM_Payments extends javax.swing.JPanel {
     
     private List<PurchaseOrder> pos = new ArrayList<>();
+    private List<PurchaseOrder> approvedPos = new ArrayList<>();
     private String currentUserId;
     
     public Form_FM_Payments(String userId) {
@@ -150,7 +151,8 @@ public class Form_FM_Payments extends javax.swing.JPanel {
         Map<String, Double> itemPrices = new HashMap<>();
         File file = new File("items.txt");
 
-        if (!file.exists()) return itemPrices;
+        if (!file.exists()) 
+            return itemPrices;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
@@ -213,21 +215,23 @@ public class Form_FM_Payments extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
 
+        approvedPos.clear();
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         Map<String, Double> itemPrices;
-    
+
         try {
             itemPrices = loadItemPrices();
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, 
-                "Failed to load item prices.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            itemPrices = new HashMap<>();
         }
 
         for (PurchaseOrder po : pos) {
             if ("Approved".equals(po.getStatus())) {
-                double totalAmount = 0.0;
+                approvedPos.add(po);
+
+                double totalAmount = 0;
                 for (POItem item : po.getItems()) {
                     Double price = itemPrices.get(item.getItemCode());
                     if (price != null) {
@@ -242,7 +246,7 @@ public class Form_FM_Payments extends javax.swing.JPanel {
                     po.getRaisedBy(),
                     po.getStatus(),
                     String.format("RM %.2f", totalAmount),
-                    ""
+                    "" // Action column
                 });
             }
         }
@@ -250,7 +254,7 @@ public class Form_FM_Payments extends javax.swing.JPanel {
 
 
     private void showViewDialog(int row) {
-        PurchaseOrder po = pos.get(row);
+        PurchaseOrder po = approvedPos.get(row);
         
         JDialog dialog = new JDialog();
         dialog.setTitle("View Purchase Order - " + po.getPoId());
